@@ -1,4 +1,4 @@
-const CACHE_NAME = "schreibraum-cache-v1";
+const CACHE_NAME = "schreibraum-cache-v2";
 const FILES_TO_CACHE = ["./", "./index.html"];
 
 self.addEventListener("install", (event) => {

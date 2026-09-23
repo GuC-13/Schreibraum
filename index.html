@@ -52,6 +52,28 @@
   #schreibraumQrFullscreen { display: flex; }
   #schreibraumQrFullscreen.hidden { display: none; }
   #schreibraumWriteTextarea.hidden { display: none; }
+  .schreibraum-board-frame {
+    position: relative;
+    margin: 34px 0 0;
+    padding: 22px 18px 18px;
+    border-radius: 22px 22px 30px 30px / 22px 22px 40px 40px;
+    border-width: 18px;
+    border-style: solid;
+    border-color: var(--board-color, var(--accent));
+    background: #ffffff;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.22), inset 0 0 0 4px rgba(255, 255, 255, 0.55);
+  }
+  .schreibraum-board-frame::before {
+    content: "";
+    position: absolute;
+    top: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 70px;
+    height: 26px;
+    background: var(--board-color, var(--accent));
+    border-radius: 10px 10px 3px 3px;
+  }
   #schreibraumReactionPopup.hidden { display: none !important; }
   @keyframes schreibraumReactionPop {
     0% { transform: scale(0.3); opacity: 0; }
@@ -92,19 +114,17 @@
       <input type="text" id="schreibraumQuestionInput" placeholder="z.B. Was ist ein Prisma?">
     </div>
     <p style="color:var(--muted); font-size:0.85rem;"><span id="schreibraumHostCount">0</span> Person(en) beigetreten</p>
-    <div class="row">
-      <button class="btn btn-big" style="flex:1;" id="schreibraumMonitorOpenBtn">🖥️ Alle Bildschirme anzeigen</button>
-      <button class="btn btn-big btn-secondary" style="flex:1;" id="schreibraumClearAllBtn">🧹 Alle Boardinhalte löschen</button>
-    </div>
+    <button class="btn btn-big" id="schreibraumMonitorOpenBtn">🖥️ Alle Bildschirme anzeigen</button>
     <div id="schreibraumHostGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px;"></div>
   </div>
 
-  <!-- Monitor-Ansicht (nur die Bildschirme, für bis zu 24 SuS) -->
+  <!-- Monitor-/Präsentier-Ansicht (Haupt-Arbeitsansicht während des Schreibens) -->
   <div id="schreibraumMonitorView" class="view hidden">
     <div class="row back-row"><button class="btn btn-secondary" id="schreibraumMonitorBackBtn">← Zurück zur Übersicht</button></div>
     <h1 style="font-size:1.4rem;">🖥️ Alle Bildschirme <span id="schreibraumMonitorPin" style="color:var(--muted); font-size:1rem;"></span></h1>
     <p id="schreibraumMonitorQuestion" class="hidden" style="font-weight:700; font-size:1.05rem; margin:0 0 4px;"></p>
     <p style="color:var(--muted); font-size:0.85rem;"><span id="schreibraumMonitorCount">0</span> Person(en) beigetreten</p>
+    <button class="btn btn-big btn-secondary" id="schreibraumClearAllBtn">🧹 Alle Boardinhalte löschen</button>
     <div id="schreibraumMonitorGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px;"></div>
   </div>
 
@@ -124,7 +144,7 @@
   <!-- Schreiben (Schüler) -->
   <div id="schreibraumWriteView" class="view hidden">
     <div class="row back-row"><button class="btn btn-secondary" id="schreibraumWriteLeaveBtn">← Verlassen</button></div>
-    <div id="schreibraumWriteCard" style="border-radius:20px; border:6px solid var(--accent); padding:14px;">
+    <div id="schreibraumWriteCard" class="schreibraum-board-frame">
       <h1 style="text-align:center; font-size:2rem;" id="schreibraumWriteName"></h1>
       <p id="schreibraumWriteQuestion" class="sub hidden" style="font-size:1.1rem; font-weight:700; color:var(--text);"></p>
       <div class="choice-row" style="display:flex; gap:8px; margin-bottom:10px;">
@@ -153,7 +173,7 @@
     </div>
   </div>
 
-  <p id="appVersionLabel">v2026-09-23.1</p>
+  <p id="appVersionLabel">v2026-09-23.2</p>
 </div>
 
 <!-- QR Vollbild -->
@@ -447,7 +467,7 @@ function schreibraumStopHeartbeat() {
   document.removeEventListener("visibilitychange", schreibraumWriteActive);
 }
 let schreibraumCurrentQuestion = "";
-function schreibraumRenderCards(students, interactive) {
+function schreibraumRenderCards(students) {
   return students.map(s => {
     const lastSeenMs = s.lastSeen && typeof s.lastSeen.toMillis === "function" ? s.lastSeen.toMillis() : 0;
     const away = s.active === false || (lastSeenMs > 0 && Date.now() - lastSeenMs > SCHREIBRAUM_AWAY_MS);
@@ -456,7 +476,7 @@ function schreibraumRenderCards(students, interactive) {
       <div class="setup-card${away ? " schreibraum-card-away" : ""}" style="padding:12px; border-left:8px solid ${color};">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:6px;">
           <div style="font-weight:800; font-size:1.1rem;">${escapeHtml(s.name)}${away ? '<span class="schreibraum-away-badge">Abwesend</span>' : ""}</div>
-          ${interactive ? `<button class="schreibraum-react-btn" data-react-id="${s.id}" title="Daumen hoch senden">👍</button>` : ""}
+          <button class="schreibraum-react-btn" data-react-id="${s.id}" title="Daumen hoch senden">👍</button>
         </div>
         ${s.mode === "draw" && s.drawingData
           ? `<img src="${s.drawingData}" style="width:100%; border-radius:8px; border:1px solid var(--border); background:#fff;">`
@@ -466,18 +486,20 @@ function schreibraumRenderCards(students, interactive) {
 }
 function schreibraumRenderHostGrid() {
   const students = schreibraumLastStudents;
-  document.getElementById("schreibraumHostGrid").innerHTML = schreibraumRenderCards(students, true);
-  document.getElementById("schreibraumMonitorGrid").innerHTML = schreibraumRenderCards(students, false);
+  document.getElementById("schreibraumHostGrid").innerHTML = schreibraumRenderCards(students);
+  document.getElementById("schreibraumMonitorGrid").innerHTML = schreibraumRenderCards(students);
   document.getElementById("schreibraumMonitorCount").textContent = String(students.length);
 }
-document.getElementById("schreibraumHostGrid").addEventListener("click", (e) => {
+function schreibraumHandleReactClick(e) {
   const btn = e.target.closest("[data-react-id]");
   if (!btn || !schreibraumPin) return;
   const id = btn.dataset.reactId;
   firebaseDb.collection("writerooms").doc(schreibraumPin).collection("students").doc(id)
     .update({ reaction: { emoji: "👍", ts: Date.now() } })
     .catch(err => console.error("Schreibraum: Reaktion konnte nicht gesendet werden.", err));
-});
+}
+document.getElementById("schreibraumHostGrid").addEventListener("click", schreibraumHandleReactClick);
+document.getElementById("schreibraumMonitorGrid").addEventListener("click", schreibraumHandleReactClick);
 function schreibraumRenderMonitorQuestion() {
   const qEl = document.getElementById("schreibraumMonitorQuestion");
   if (schreibraumCurrentQuestion) { qEl.textContent = "❓ " + schreibraumCurrentQuestion; qEl.classList.remove("hidden"); }
@@ -633,7 +655,7 @@ document.getElementById("schreibraumJoinBtn").addEventListener("click", async ()
     const studentRef = await roomRef.collection("students").add({ name, text: "", mode: "text", color: schreibraumSelectedColor, joinedAt: Date.now(), updatedAt: Date.now(), active: true, lastSeen: firebase.firestore.FieldValue.serverTimestamp() });
     schreibraumStudentId = studentRef.id;
     document.getElementById("schreibraumWriteName").textContent = name;
-    document.getElementById("schreibraumWriteCard").style.borderColor = schreibraumSelectedColor;
+    document.getElementById("schreibraumWriteCard").style.setProperty("--board-color", schreibraumSelectedColor);
     document.getElementById("schreibraumWriteTextarea").value = "";
     document.getElementById("schreibraumWriteQuestion").classList.add("hidden");
     schreibraumSetMode("text");
