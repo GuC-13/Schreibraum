@@ -44,6 +44,7 @@
   .schreibraum-size-btn.schreibraum-active { border-color: var(--accent); background: #eff6ff; }
   #schreibraumEraserBtn.btn-active { background: var(--accent); }
   .schreibraum-card-away { filter: grayscale(1); opacity: 0.5; }
+  .schreibraum-name-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 6px 8px 6px 12px; font-weight: 700; font-size: 0.92rem; }
   .schreibraum-away-badge { display: inline-block; font-size: 0.75rem; font-weight: 700; color: #fff; background: #64748b; border-radius: 6px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
   .schreibraum-react-btn { border: none; background: #f1f5f9; border-radius: 50%; width: 30px; height: 30px; font-size: 1rem; cursor: pointer; flex-shrink: 0; }
   .schreibraum-react-btn:active { transform: scale(0.9); }
@@ -94,6 +95,9 @@
     <button class="btn btn-big" id="schreibraumHostBtn">👩‍🏫 Raum eröffnen</button>
     <button class="btn btn-big btn-secondary" id="schreibraumGoJoinBtn">🙋 Raum beitreten</button>
     <p id="schreibraumSetupNote" class="hidden" style="color:var(--muted); font-size:0.9rem; margin-top:16px;"></p>
+    <button id="appShareQrBtn" aria-label="QR-Code zum Teilen der App vergrössern" style="position:fixed; right:16px; bottom:16px; z-index:150; width:60px; height:60px; padding:4px; border-radius:14px; border:none; background:#fff; box-shadow:0 6px 18px rgba(15,23,42,0.25); cursor:pointer;">
+      <canvas id="appShareQrCanvas" style="width:100%; height:100%; image-rendering:pixelated; display:block;"></canvas>
+    </button>
   </div>
 
   <!-- Host-Ansicht -->
@@ -115,8 +119,9 @@
       <input type="text" id="schreibraumQuestionInput" placeholder="z.B. Was ist ein Prisma?">
     </div>
     <p style="color:var(--muted); font-size:0.85rem;"><span id="schreibraumHostCount">0</span> Person(en) beigetreten</p>
-    <button class="btn btn-big" id="schreibraumMonitorOpenBtn">🖥️ Alle Bildschirme anzeigen</button>
-    <div id="schreibraumHostGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:12px;"></div>
+    <button class="btn btn-big" id="schreibraumMonitorOpenBtn">🖥️ Präsentieransicht öffnen</button>
+    <p style="color:var(--muted); font-size:0.8rem; margin-top:-6px;">Die Boardinhalte erscheinen erst in der Präsentieransicht.</p>
+    <div id="schreibraumHostNameList" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
   </div>
 
   <!-- Monitor-/Präsentier-Ansicht (Haupt-Arbeitsansicht während des Schreibens) -->
@@ -126,7 +131,17 @@
     <p id="schreibraumMonitorQuestion" class="hidden" style="font-weight:700; font-size:1.05rem; margin:0 0 4px;"></p>
     <p style="color:var(--muted); font-size:0.85rem;"><span id="schreibraumMonitorCount">0</span> Person(en) beigetreten</p>
     <button class="btn btn-big btn-secondary" id="schreibraumClearAllBtn">🧹 Alle Boardinhalte löschen</button>
-    <div id="schreibraumMonitorGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:10px;"></div>
+    <div class="setup-card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 16px;">
+      <label class="field-label" style="margin:0; flex:0 0 auto;">🔍 Zoom</label>
+      <input type="range" id="schreibraumMonitorZoomSlider" min="2" max="8" step="1" value="6" style="flex:1; min-width:120px;">
+      <span id="schreibraumMonitorZoomLabel" style="font-size:0.85rem; color:var(--muted); flex:0 0 auto; min-width:80px; text-align:right;">6 Spalten</span>
+    </div>
+    <div id="schreibraumMonitorPager" class="hidden" style="display:flex; align-items:center; justify-content:center; gap:14px; margin:0 0 12px;">
+      <button class="btn btn-secondary" id="schreibraumMonitorPrevBtn" style="padding:8px 16px;">‹ Zurück</button>
+      <span id="schreibraumMonitorPageLabel" style="font-weight:700; color:var(--muted);">Seite 1/1</span>
+      <button class="btn btn-secondary" id="schreibraumMonitorNextBtn" style="padding:8px 16px;">Weiter ›</button>
+    </div>
+    <div id="schreibraumMonitorGrid" style="display:grid; gap:10px;"></div>
   </div>
 
   <!-- Beitreten (Schüler: über QR-Link mit vorausgefüllter PIN, oder manuell über den Button auf der Startseite) -->
@@ -158,11 +173,15 @@
       <textarea id="schreibraumWriteTextarea" placeholder="Hier schreiben …" style="width:100%; box-sizing:border-box; min-height:74vh; font-size:1.2rem; padding:14px; border-radius:12px; border:1px solid var(--border); resize:vertical;"></textarea>
       <div id="schreibraumDrawWrap" class="hidden">
         <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
-          <div style="display:flex; gap:6px;">
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button class="schreibraum-color-swatch schreibraum-active" data-color="#0f172a" style="background:#0f172a;" aria-label="Schwarz"></button>
             <button class="schreibraum-color-swatch" data-color="#2563eb" style="background:#2563eb;" aria-label="Blau"></button>
             <button class="schreibraum-color-swatch" data-color="#dc2626" style="background:#dc2626;" aria-label="Rot"></button>
             <button class="schreibraum-color-swatch" data-color="#16a34a" style="background:#16a34a;" aria-label="Grün"></button>
+            <button class="schreibraum-color-swatch" data-color="#ea580c" style="background:#ea580c;" aria-label="Orange"></button>
+            <button class="schreibraum-color-swatch" data-color="#7c3aed" style="background:#7c3aed;" aria-label="Violett"></button>
+            <button class="schreibraum-color-swatch" data-color="#db2777" style="background:#db2777;" aria-label="Pink"></button>
+            <button class="schreibraum-color-swatch" data-color="#0891b2" style="background:#0891b2;" aria-label="Türkis"></button>
           </div>
           <div style="display:flex; gap:6px; align-items:center;">
             <button class="schreibraum-size-btn" data-size="3" aria-label="Dünn"><span style="width:6px; height:6px;"></span></button>
@@ -177,14 +196,21 @@
     </div>
   </div>
 
-  <p id="appVersionLabel">v2026-09-23.4</p>
+  <p id="appVersionLabel">v2026-09-24.1</p>
 </div>
 
-<!-- QR Vollbild -->
+<!-- QR Vollbild (Raum-PIN) -->
 <div id="schreibraumQrFullscreen" class="hidden" style="position:fixed; inset:0; background:#ffffff; z-index:300; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
   <canvas id="schreibraumQrCanvasBig" style="width:min(80vw, 500px); height:min(80vw, 500px); image-rendering:pixelated;"></canvas>
   <div style="font-size:2rem; font-weight:800; letter-spacing:0.15em;" id="schreibraumQrBigPin">----</div>
   <button class="btn btn-secondary" id="schreibraumQrCloseBtn">Schliessen</button>
+</div>
+
+<!-- QR Vollbild (App-Link teilen) -->
+<div id="appShareQrFullscreen" style="display:none; position:fixed; inset:0; background:#ffffff; z-index:300; flex-direction:column; align-items:center; justify-content:center; gap:20px; text-align:center; padding:24px;">
+  <canvas id="appShareQrCanvasBig" style="width:min(80vw, 500px); height:min(80vw, 500px); image-rendering:pixelated;"></canvas>
+  <div style="font-size:1.1rem; font-weight:700; word-break:break-all; max-width:320px;">guc-13.github.io/Schreibraum/</div>
+  <button class="btn btn-secondary" id="appShareQrCloseBtn">Schliessen</button>
 </div>
 
 <!-- Reaktion (Daumen hoch) - poppt beim Schüler-Gerät unten rechts auf -->
@@ -444,7 +470,11 @@ async function ensureFirebase() {
 /* =========================================================================
    SCHREIBRAUM
    ========================================================================= */
-const SCHREIBRAUM_PALETTE = ["#2563eb", "#dc2626", "#16a34a", "#f59e0b", "#7c3aed", "#db2777", "#0891b2", "#64748b"];
+const SCHREIBRAUM_PALETTE = [
+  "#2563eb", "#dc2626", "#16a34a", "#f59e0b", "#7c3aed", "#db2777", "#0891b2", "#64748b",
+  "#ea580c", "#eab308", "#4f46e5", "#059669", "#0d9488", "#be123c", "#a855f7", "#65a30d",
+  "#78716c", "#1e293b", "#f472b6", "#0ea5e9"
+];
 let schreibraumSelectedColor = SCHREIBRAUM_PALETTE[0];
 let schreibraumPin = null, schreibraumIsHost = false;
 let schreibraumStudentId = null, schreibraumStudentName = null;
@@ -488,11 +518,43 @@ function schreibraumRenderCards(students) {
       </div>`;
   }).join("") || `<p style="color:var(--muted);">Noch niemand beigetreten.</p>`;
 }
-function schreibraumRenderHostGrid() {
+function schreibraumRenderHostSummary() {
   const students = schreibraumLastStudents;
-  document.getElementById("schreibraumHostGrid").innerHTML = schreibraumRenderCards(students);
-  document.getElementById("schreibraumMonitorGrid").innerHTML = schreibraumRenderCards(students);
+  const list = document.getElementById("schreibraumHostNameList");
+  list.innerHTML = students.map(s => {
+    const lastSeenMs = s.lastSeen && typeof s.lastSeen.toMillis === "function" ? s.lastSeen.toMillis() : 0;
+    const away = s.active === false || (lastSeenMs > 0 && Date.now() - lastSeenMs > SCHREIBRAUM_AWAY_MS);
+    const color = s.color || "#94a3b8";
+    return `
+      <span class="schreibraum-name-chip${away ? " schreibraum-card-away" : ""}" style="border-left:6px solid ${color};">
+        ${escapeHtml(s.name)}${away ? '<span class="schreibraum-away-badge">Abwesend</span>' : ""}
+        <button class="schreibraum-react-btn" data-react-id="${s.id}" title="Daumen hoch senden" style="width:24px; height:24px; font-size:0.85rem;">👍</button>
+      </span>`;
+  }).join("") || `<p style="color:var(--muted);">Noch niemand beigetreten.</p>`;
+}
+const SCHREIBRAUM_MONITOR_PAGE_SIZE = 24;
+let schreibraumMonitorZoom = 6;
+let schreibraumMonitorPage = 0;
+function schreibraumRenderMonitorGrid() {
+  const students = schreibraumLastStudents;
   document.getElementById("schreibraumMonitorCount").textContent = String(students.length);
+  const totalPages = Math.max(1, Math.ceil(students.length / SCHREIBRAUM_MONITOR_PAGE_SIZE));
+  if (schreibraumMonitorPage >= totalPages) schreibraumMonitorPage = totalPages - 1;
+  if (schreibraumMonitorPage < 0) schreibraumMonitorPage = 0;
+  const start = schreibraumMonitorPage * SCHREIBRAUM_MONITOR_PAGE_SIZE;
+  const pageStudents = students.slice(start, start + SCHREIBRAUM_MONITOR_PAGE_SIZE);
+  const grid = document.getElementById("schreibraumMonitorGrid");
+  grid.style.gridTemplateColumns = `repeat(${schreibraumMonitorZoom}, 1fr)`;
+  grid.innerHTML = schreibraumRenderCards(pageStudents);
+  const pager = document.getElementById("schreibraumMonitorPager");
+  pager.classList.toggle("hidden", totalPages <= 1);
+  document.getElementById("schreibraumMonitorPageLabel").textContent = `Seite ${schreibraumMonitorPage + 1}/${totalPages}`;
+  document.getElementById("schreibraumMonitorPrevBtn").disabled = schreibraumMonitorPage === 0;
+  document.getElementById("schreibraumMonitorNextBtn").disabled = schreibraumMonitorPage >= totalPages - 1;
+}
+function schreibraumRenderAll() {
+  schreibraumRenderHostSummary();
+  schreibraumRenderMonitorGrid();
 }
 function schreibraumHandleReactClick(e) {
   const btn = e.target.closest("[data-react-id]");
@@ -502,8 +564,21 @@ function schreibraumHandleReactClick(e) {
     .update({ reaction: { emoji: "👍", ts: Date.now() } })
     .catch(err => console.error("Schreibraum: Reaktion konnte nicht gesendet werden.", err));
 }
-document.getElementById("schreibraumHostGrid").addEventListener("click", schreibraumHandleReactClick);
+document.getElementById("schreibraumHostNameList").addEventListener("click", schreibraumHandleReactClick);
 document.getElementById("schreibraumMonitorGrid").addEventListener("click", schreibraumHandleReactClick);
+document.getElementById("schreibraumMonitorZoomSlider").addEventListener("input", (e) => {
+  schreibraumMonitorZoom = Number(e.target.value);
+  document.getElementById("schreibraumMonitorZoomLabel").textContent = `${schreibraumMonitorZoom} Spalten`;
+  schreibraumRenderMonitorGrid();
+});
+document.getElementById("schreibraumMonitorPrevBtn").addEventListener("click", () => {
+  schreibraumMonitorPage--;
+  schreibraumRenderMonitorGrid();
+});
+document.getElementById("schreibraumMonitorNextBtn").addEventListener("click", () => {
+  schreibraumMonitorPage++;
+  schreibraumRenderMonitorGrid();
+});
 function schreibraumRenderMonitorQuestion() {
   const qEl = document.getElementById("schreibraumMonitorQuestion");
   if (schreibraumCurrentQuestion) { qEl.textContent = "❓ " + schreibraumCurrentQuestion; qEl.classList.remove("hidden"); }
@@ -511,7 +586,7 @@ function schreibraumRenderMonitorQuestion() {
 }
 function schreibraumStartHostWatch() {
   schreibraumStopHostWatch();
-  schreibraumHostWatchIv = setInterval(schreibraumRenderHostGrid, 3000);
+  schreibraumHostWatchIv = setInterval(schreibraumRenderAll, 3000);
 }
 function schreibraumStopHostWatch() {
   if (schreibraumHostWatchIv) { clearInterval(schreibraumHostWatchIv); schreibraumHostWatchIv = null; }
@@ -559,10 +634,11 @@ document.getElementById("schreibraumHostBtn").addEventListener("click", async ()
   document.getElementById("schreibraumQuestionInput").value = "";
   schreibraumCurrentQuestion = "";
   schreibraumRenderMonitorQuestion();
-  document.getElementById("schreibraumHostGrid").innerHTML = "";
+  document.getElementById("schreibraumHostNameList").innerHTML = "";
   document.getElementById("schreibraumMonitorGrid").innerHTML = "";
   document.getElementById("schreibraumHostCount").textContent = "0";
   document.getElementById("schreibraumMonitorCount").textContent = "0";
+  schreibraumMonitorPage = 0;
   showView("schreibraumHost");
   const joinUrl = `${location.origin}${location.pathname}?join=${pin}`;
   qrDrawToCanvas(document.getElementById("schreibraumQrCanvas"), joinUrl, 4);
@@ -573,7 +649,7 @@ document.getElementById("schreibraumHostBtn").addEventListener("click", async ()
     students.sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
     document.getElementById("schreibraumHostCount").textContent = String(students.length);
     schreibraumLastStudents = students;
-    schreibraumRenderHostGrid();
+    schreibraumRenderAll();
   }, err => console.error("Schreibraum: Antworten konnten nicht geladen werden.", err));
   schreibraumStartHostWatch();
 });
@@ -585,6 +661,17 @@ document.getElementById("schreibraumQrOpenBtn").addEventListener("click", () => 
 });
 document.getElementById("schreibraumQrCloseBtn").addEventListener("click", () => {
   document.getElementById("schreibraumQrFullscreen").classList.add("hidden");
+});
+
+/* ---- QR-Code zum Teilen der App selbst (fixe URL, unabhängig vom Raum) ---- */
+const APP_SHARE_URL = "https://guc-13.github.io/Schreibraum/";
+qrDrawToCanvas(document.getElementById("appShareQrCanvas"), APP_SHARE_URL, 3);
+document.getElementById("appShareQrBtn").addEventListener("click", () => {
+  qrDrawToCanvas(document.getElementById("appShareQrCanvasBig"), APP_SHARE_URL, 10);
+  document.getElementById("appShareQrFullscreen").style.display = "flex";
+});
+document.getElementById("appShareQrCloseBtn").addEventListener("click", () => {
+  document.getElementById("appShareQrFullscreen").style.display = "none";
 });
 let schreibraumQuestionSaveTimeout = null;
 document.getElementById("schreibraumQuestionInput").addEventListener("input", (e) => {
@@ -621,6 +708,8 @@ document.getElementById("schreibraumClearAllBtn").addEventListener("click", () =
   }, "Alle löschen");
 });
 document.getElementById("schreibraumMonitorOpenBtn").addEventListener("click", () => {
+  schreibraumMonitorPage = 0;
+  schreibraumRenderMonitorGrid();
   showView("schreibraumMonitor");
 });
 document.getElementById("schreibraumMonitorBackBtn").addEventListener("click", () => {
