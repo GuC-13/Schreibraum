@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Schreibraum">
@@ -10,31 +10,35 @@
 <style>
   :root {
     --bg: #f1f5f9; --card: #ffffff; --border: #e2e8f0; --text: #0f172a; --muted: #64748b;
-    --accent: #2563eb; --accent-dark: #1d4ed8; --danger: #dc2626; --success: #16a34a;
+    --accent: #2563eb; --accent-dark: #1d4ed8; --danger: #dc2626; --success: #16a34a; --warn: #b45309;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; overscroll-behavior: none; }
   #app { max-width: 900px; margin: 0 auto; padding: 16px 16px 60px; }
   #app.schreibraum-fullboard { max-width: none; padding: 10px 10px 16px; }
-  .view.hidden { display: none; }
+  #app.schreibraum-wide { max-width: none; }
+  .view.hidden, .hidden { display: none !important; }
   h1 { font-size: 1.4rem; margin: 4px 0 4px; text-align: center; }
   h2.sub { font-size: 1rem; text-align: center; margin: 0 0 18px; color: var(--muted); font-weight: 500; }
   .row { display: flex; gap: 10px; }
-  .row.back-row { margin-bottom: 14px; }
+  .row.back-row { margin-bottom: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
   .btn { border: none; border-radius: 10px; padding: 12px 18px; font-size: 1rem; font-weight: 700; cursor: pointer; color: white; background: var(--accent); }
   .btn-big { width: 100%; padding: 20px; font-size: 1.15rem; border-radius: 16px; margin-bottom: 12px; }
+  .btn-small { padding: 8px 12px; font-size: 0.9rem; }
   .btn-secondary { background: #64748b; }
   .btn-secondary.btn-active { background: var(--accent); }
+  .btn-outline { background: #fff; color: var(--text); border: 2px solid var(--border); }
   .btn-danger { background: var(--danger); }
   .btn:disabled { opacity: 0.5; cursor: default; }
   .setup-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
   label.field-label { font-size: 0.82rem; font-weight: 700; color: var(--muted); display: block; margin-bottom: 6px; margin-top: 12px; }
   label.field-label:first-child { margin-top: 0; }
+  .field-hint { font-size: 0.8rem; color: var(--muted); margin: 4px 0 0; }
   input[type="text"], textarea {
     border: 1px solid var(--border); border-radius: 8px; padding: 10px; font-size: 1rem; width: 100%; background: white; color: var(--text); font-family: inherit;
   }
-  .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); display: flex; align-items: center; justify-content: center; z-index: 200; padding: 16px; }
-  .modal-overlay.hidden { display: none; }
+  textarea[readonly] { background: #f8fafc; color: var(--muted); }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); display: flex; align-items: center; justify-content: center; z-index: 400; padding: 16px; }
   .modal-box { background: var(--card); border-radius: 14px; padding: 20px; max-width: 420px; width: 100%; max-height: 90vh; overflow-y: auto; }
   .modal-actions { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
   .schreibraum-color-swatch { width: 36px; height: 36px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; padding: 0; }
@@ -43,17 +47,11 @@
   .schreibraum-size-btn span { display: block; border-radius: 50%; background: #0f172a; }
   .schreibraum-size-btn.schreibraum-active { border-color: var(--accent); background: #eff6ff; }
   #schreibraumEraserBtn.btn-active { background: var(--accent); }
-  .schreibraum-card-away { filter: grayscale(1); opacity: 0.5; }
-  .schreibraum-name-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 6px 8px 6px 12px; font-weight: 700; font-size: 0.92rem; }
-  .schreibraum-away-badge { display: inline-block; font-size: 0.75rem; font-weight: 700; color: #fff; background: #64748b; border-radius: 6px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
-  .schreibraum-react-btn { border: none; background: #f1f5f9; border-radius: 50%; width: 30px; height: 30px; font-size: 1rem; cursor: pointer; flex-shrink: 0; }
+  .schreibraum-card-away { opacity: 0.6; }
+  .schreibraum-away-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; color: #fff; background: #64748b; border-radius: 6px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
+  .schreibraum-done-badge { background: var(--success); }
+  .schreibraum-react-btn { border: none; background: #f1f5f9; border-radius: 50%; width: 30px; height: 30px; font-size: 1rem; cursor: pointer; flex-shrink: 0; padding: 0; }
   .schreibraum-react-btn:active { transform: scale(0.9); }
-  #schreibraumSetupNote.hidden, #schreibraumJoinError.hidden, #schreibraumWriteQuestion.hidden { display: none; }
-  #schreibraumMonitorQuestion.hidden { display: none; }
-  #schreibraumDrawWrap.hidden { display: none; }
-  #schreibraumQrFullscreen { display: flex; }
-  #schreibraumQrFullscreen.hidden { display: none; }
-  #schreibraumWriteTextarea.hidden { display: none; }
   .schreibraum-board-frame {
     position: relative;
     margin: 34px 0 0;
@@ -76,13 +74,43 @@
     background: var(--board-color, var(--accent));
     border-radius: 10px 10px 3px 3px;
   }
+  /* Lehrperson: Werkzeugleiste und Karten */
+  .schreibraum-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+  .schreibraum-stats { color: var(--muted); font-size: 0.95rem; margin: 6px 0 0; }
+  .schreibraum-stats b { color: var(--text); }
+  .schreibraum-card { position: relative; padding: 12px; margin: 0; border-left: 8px solid #94a3b8; display: flex; flex-direction: column; min-width: 0; }
+  .schreibraum-card-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 6px; }
+  .schreibraum-card-name { font-weight: 800; font-size: 1.05rem; min-width: 0; overflow-wrap: anywhere; }
+  .schreibraum-card-actions { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+  .schreibraum-card-body { max-height: 260px; overflow: auto; }
+  .schreibraum-card-text { white-space: pre-wrap; overflow-wrap: anywhere; min-height: 40px; }
+  .schreibraum-card-body img { width: 100%; border-radius: 8px; border: 1px solid var(--border); background: #fff; display: block; margin-top: 6px; }
+  .schreibraum-card-empty { color: var(--muted); font-style: italic; min-height: 40px; }
+  .schreibraum-card.schreibraum-concealed { cursor: pointer; }
+  .schreibraum-card.schreibraum-concealed .schreibraum-card-body { filter: blur(12px); user-select: none; pointer-events: none; }
+  .schreibraum-conceal-label { position: absolute; left: 0; right: 0; top: 50%; text-align: center; font-weight: 800; color: var(--muted); pointer-events: none; }
+  .schreibraum-last-reaction { font-size: 0.85rem; opacity: 0.55; margin-left: 4px; }
+  /* Spotlight: eine Antwort gross zeigen */
+  #schreibraumSpotlight { position: fixed; inset: 0; background: #fff; z-index: 300; display: flex; flex-direction: column; padding: 16px; gap: 12px; }
+  #schreibraumSpotlightBody { flex: 1; overflow: auto; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  #schreibraumSpotlightBody .schreibraum-card-text { font-size: clamp(1.4rem, 3vw, 2.6rem); max-width: 1100px; width: 100%; }
+  #schreibraumSpotlightBody img { max-width: 100%; max-height: 75vh; border: 1px solid var(--border); border-radius: 12px; }
+  /* Schüler: Status und Sperre */
+  .schreibraum-status { font-size: 0.85rem; font-weight: 700; color: var(--success); }
+  .schreibraum-status.schreibraum-status-busy { color: var(--muted); }
+  .schreibraum-status.schreibraum-status-warn { color: var(--warn); }
+  .schreibraum-lock-banner { background: #fef3c7; color: #78350f; border-radius: 12px; padding: 12px 14px; font-weight: 700; text-align: center; margin-bottom: 10px; }
+  #schreibraumDrawCanvas { display: block; width: min(100%, calc(68vh * 4 / 3)); aspect-ratio: 4 / 3; margin: 0 auto; touch-action: none; border-radius: 16px; border: 1px solid var(--border); background: #ffffff; box-shadow: 0 4px 16px rgba(15,23,42,0.12); }
+  #schreibraumDrawWrap.schreibraum-locked #schreibraumDrawCanvas { opacity: 0.6; pointer-events: none; }
+  #schreibraumWriteQuestion.schreibraum-flash { animation: schreibraumFlash 1.2s ease-out; }
+  @keyframes schreibraumFlash { 0% { background: #fde68a; } 100% { background: transparent; } }
   #schreibraumReactionPopup.hidden { display: none !important; }
   @keyframes schreibraumReactionPop {
     0% { transform: scale(0.3); opacity: 0; }
     60% { transform: scale(1.15); opacity: 1; }
     100% { transform: scale(1); opacity: 1; }
   }
-  @media (prefers-reduced-motion: reduce) { #schreibraumReactionPopup { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { #schreibraumReactionPopup, #schreibraumWriteQuestion.schreibraum-flash { animation: none; } }
   #appVersionLabel { text-align: center; margin-top: 14px; font-size: 0.68rem; color: var(--muted); opacity: 0.6; }
 </style>
 </head>
@@ -92,6 +120,8 @@
   <!-- START: Raum eröffnen -->
   <div id="schreibraumPickView" class="view">
     <h1>🖊️ Schreibraum</h1>
+    <button class="btn btn-big btn-outline hidden" id="schreibraumResumeStudentBtn"></button>
+    <button class="btn btn-big btn-outline hidden" id="schreibraumResumeHostBtn"></button>
     <button class="btn btn-big" id="schreibraumHostBtn">👩‍🏫 Raum eröffnen</button>
     <button class="btn btn-big btn-secondary" id="schreibraumGoJoinBtn">🙋 Raum beitreten</button>
     <p id="schreibraumSetupNote" class="hidden" style="color:var(--muted); font-size:0.9rem; margin-top:16px;"></p>
@@ -100,42 +130,42 @@
     </button>
   </div>
 
-  <!-- Host-Ansicht -->
+  <!-- Lehrperson: Übersicht und Live-Boards in einer Ansicht -->
   <div id="schreibraumHostView" class="view hidden">
-    <div class="row back-row"><button class="btn btn-secondary" id="schreibraumHostCloseBtn">← Raum schliessen</button></div>
-    <h1>👩‍🏫 Schreibraum <span id="schreibraumRoomPin" style="color:var(--muted); font-size:1rem;"></span></h1>
+    <div class="row back-row">
+      <button class="btn btn-secondary" id="schreibraumHostCloseBtn">← Raum schliessen</button>
+      <button class="btn btn-secondary btn-small" id="schreibraumExportBtn">⬇️ Antworten sichern</button>
+    </div>
     <div class="setup-card" style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
-      <div>
-        <label class="field-label">PIN</label>
-        <div id="schreibraumPinDisplay" style="font-size:2.4rem; font-weight:800; letter-spacing:0.15em;">----</div>
-        <p style="color:var(--muted); font-size:0.85rem; max-width:220px;">SuS scannen den QR-Code, um beizutreten.</p>
-      </div>
       <button id="schreibraumQrOpenBtn" style="background:none; border:none; padding:0; cursor:pointer;" aria-label="QR-Code vergrössern">
-        <canvas id="schreibraumQrCanvas" style="width:140px; height:140px; image-rendering:pixelated;"></canvas>
+        <canvas id="schreibraumQrCanvas" style="width:110px; height:110px; image-rendering:pixelated;"></canvas>
       </button>
+      <div style="flex:1; min-width:180px;">
+        <label class="field-label">PIN · QR antippen zum Vergrössern</label>
+        <div id="schreibraumPinDisplay" style="font-size:2.4rem; font-weight:800; letter-spacing:0.15em;">----</div>
+        <p class="schreibraum-stats" id="schreibraumHostStats">0 beigetreten</p>
+      </div>
     </div>
     <div class="setup-card">
-      <label class="field-label">Frage (optional, erscheint bei allen SuS)</label>
-      <input type="text" id="schreibraumQuestionInput" placeholder="z.B. Was ist ein Prisma?">
+      <label class="field-label" for="schreibraumQuestionInput">Frage / Auftrag (erscheint bei allen SuS)</label>
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="schreibraumQuestionInput" placeholder="z.B. Was ist ein Prisma?">
+        <button class="btn" id="schreibraumQuestionSendBtn" style="flex:0 0 auto;">📤 Senden</button>
+      </div>
+      <p class="field-hint" id="schreibraumQuestionState">Die SuS sehen die Frage erst nach «Senden».</p>
     </div>
-    <p style="color:var(--muted); font-size:0.85rem;"><span id="schreibraumHostCount">0</span> Person(en) beigetreten</p>
-    <button class="btn btn-big" id="schreibraumMonitorOpenBtn">🖥️ Präsentieransicht öffnen</button>
-    <p style="color:var(--muted); font-size:0.8rem; margin-top:-6px;">Die Boardinhalte erscheinen erst in der Präsentieransicht.</p>
-    <div id="schreibraumHostNameList" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
-  </div>
-
-  <!-- Monitor-/Präsentier-Ansicht (Haupt-Arbeitsansicht während des Schreibens) -->
-  <div id="schreibraumMonitorView" class="view hidden">
-    <div class="row back-row"><button class="btn btn-secondary" id="schreibraumMonitorBackBtn">← Zurück zur Übersicht</button></div>
-    <h1 style="font-size:1.4rem;">🖥️ Alle Bildschirme <span id="schreibraumMonitorPin" style="color:var(--muted); font-size:1rem;"></span></h1>
-    <p id="schreibraumMonitorQuestion" class="hidden" style="font-weight:700; font-size:1.05rem; margin:0 0 4px;"></p>
-    <p style="color:var(--muted); font-size:0.85rem;"><span id="schreibraumMonitorCount">0</span> Person(en) beigetreten</p>
-    <button class="btn btn-big btn-secondary" id="schreibraumClearAllBtn">🧹 Alle Boardinhalte löschen</button>
-    <div class="setup-card" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:12px 16px;">
-      <label class="field-label" style="margin:0; flex:0 0 auto;">🔍 Zoom</label>
-      <input type="range" id="schreibraumMonitorZoomSlider" min="2" max="8" step="1" value="6" style="flex:1; min-width:120px;">
-      <span id="schreibraumMonitorZoomLabel" style="font-size:0.85rem; color:var(--muted); flex:0 0 auto; min-width:80px; text-align:right;">6 Spalten</span>
+    <div class="schreibraum-toolbar">
+      <button class="btn btn-secondary btn-small" id="schreibraumConcealBtn" title="Antworten auf dem Bildschirm verdecken – z.B. solange der Beamer läuft">🙈 Antworten verdecken</button>
+      <button class="btn btn-secondary btn-small" id="schreibraumAnonBtn" title="Namen durch Nummern ersetzen">🕶️ Namen ausblenden</button>
+      <button class="btn btn-secondary btn-small" id="schreibraumLockBtn" title="Eingabe bei allen SuS sperren">✋ Stifte weg</button>
+      <button class="btn btn-secondary btn-small" id="schreibraumNewRoundBtn" title="Alle Boards leeren für die nächste Frage">🧹 Neue Runde</button>
+      <span style="display:flex; align-items:center; gap:6px; margin-left:auto;">
+        <label for="schreibraumMonitorZoomSlider" style="font-size:0.82rem; font-weight:700; color:var(--muted);">Karten pro Zeile</label>
+        <input type="range" id="schreibraumMonitorZoomSlider" min="1" max="8" step="1" value="4" style="width:110px;">
+        <span id="schreibraumMonitorZoomLabel" style="font-size:0.85rem; color:var(--muted); min-width:14px;">4</span>
+      </span>
     </div>
+    <p id="schreibraumConcealHint" class="field-hint hidden" style="margin:0 0 10px;">🙈 Antworten sind verdeckt. Tippe auf eine Karte, um sie einzeln aufzudecken, oder auf 🔍, um sie gross zu zeigen.</p>
     <div id="schreibraumMonitorPager" class="hidden" style="display:flex; align-items:center; justify-content:center; gap:14px; margin:0 0 12px;">
       <button class="btn btn-secondary" id="schreibraumMonitorPrevBtn" style="padding:8px 16px;">‹ Zurück</button>
       <span id="schreibraumMonitorPageLabel" style="font-weight:700; color:var(--muted);">Seite 1/1</span>
@@ -148,11 +178,13 @@
   <div id="schreibraumJoinView" class="view hidden">
     <div class="row back-row"><button class="btn btn-secondary" data-back-pick>← Zurück</button></div>
     <h1>🙋 Schreibraum beitreten</h1>
+    <button class="btn btn-big btn-outline hidden" id="schreibraumJoinResumeBtn"></button>
     <div class="setup-card">
-      <label class="field-label">PIN</label>
-      <input type="text" id="schreibraumJoinPinInput" placeholder="z.B. 4821" maxlength="4" inputmode="numeric" style="font-size:1.3rem; text-align:center; letter-spacing:0.1em;">
-      <label class="field-label">Dein Name</label>
-      <input type="text" id="schreibraumJoinNameInput" placeholder="Name" maxlength="24">
+      <label class="field-label" for="schreibraumJoinPinInput">PIN</label>
+      <input type="text" id="schreibraumJoinPinInput" placeholder="z.B. 4821" maxlength="4" inputmode="numeric" autocomplete="off" style="font-size:1.3rem; text-align:center; letter-spacing:0.1em;">
+      <label class="field-label" for="schreibraumJoinNameInput">Dein Name</label>
+      <input type="text" id="schreibraumJoinNameInput" placeholder="Vorname" maxlength="24" autocomplete="off">
+      <p class="field-hint">Vorname genügt. Bei gleichen Vornamen: Initial des Nachnamens ergänzen (z.B. «Lea M.»).</p>
       <label class="field-label">Deine Boardfarbe</label>
       <div id="schreibraumJoinColorRow" style="display:flex; gap:8px; flex-wrap:wrap;"></div>
     </div>
@@ -162,17 +194,21 @@
 
   <!-- Schreiben (Schüler) -->
   <div id="schreibraumWriteView" class="view hidden">
-    <div class="row back-row"><button class="btn btn-secondary" id="schreibraumWriteLeaveBtn">← Verlassen</button></div>
+    <div class="row back-row">
+      <button class="btn btn-secondary" id="schreibraumWriteLeaveBtn">← Verlassen</button>
+      <span class="schreibraum-status" id="schreibraumWriteStatus" role="status" aria-live="polite">✓ Gespeichert</span>
+    </div>
     <div id="schreibraumWriteCard" class="schreibraum-board-frame">
       <h1 style="text-align:center; font-size:2rem;" id="schreibraumWriteName"></h1>
-      <p id="schreibraumWriteQuestion" class="sub hidden" style="font-size:1.1rem; font-weight:700; color:var(--text);"></p>
+      <p id="schreibraumWriteQuestion" class="sub hidden" style="font-size:1.2rem; font-weight:700; color:var(--text); text-align:center; border-radius:8px; padding:4px 8px;"></p>
+      <div id="schreibraumLockBanner" class="schreibraum-lock-banner hidden">✋ Stifte weg – schau nach vorne.</div>
       <div class="choice-row" style="display:flex; gap:8px; margin-bottom:10px;">
         <button class="btn btn-secondary" id="schreibraumModeTextBtn" style="flex:1;">⌨️ Tippen</button>
         <button class="btn btn-secondary" id="schreibraumModeDrawBtn" style="flex:1;">✏️ Zeichnen</button>
       </div>
-      <textarea id="schreibraumWriteTextarea" placeholder="Hier schreiben …" style="width:100%; box-sizing:border-box; min-height:74vh; font-size:1.2rem; padding:14px; border-radius:12px; border:1px solid var(--border); resize:vertical;"></textarea>
+      <textarea id="schreibraumWriteTextarea" placeholder="Hier schreiben …" style="width:100%; box-sizing:border-box; min-height:60vh; font-size:1.2rem; padding:14px; border-radius:12px; border:1px solid var(--border); resize:vertical;"></textarea>
       <div id="schreibraumDrawWrap" class="hidden">
-        <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
+        <div id="schreibraumDrawTools" style="display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button class="schreibraum-color-swatch schreibraum-active" data-color="#0f172a" style="background:#0f172a;" aria-label="Schwarz"></button>
             <button class="schreibraum-color-swatch" data-color="#2563eb" style="background:#2563eb;" aria-label="Blau"></button>
@@ -184,26 +220,44 @@
             <button class="schreibraum-color-swatch" data-color="#0891b2" style="background:#0891b2;" aria-label="Türkis"></button>
           </div>
           <div style="display:flex; gap:6px; align-items:center;">
-            <button class="schreibraum-size-btn" data-size="3" aria-label="Dünn"><span style="width:6px; height:6px;"></span></button>
-            <button class="schreibraum-size-btn schreibraum-active" data-size="6" aria-label="Mittel"><span style="width:11px; height:11px;"></span></button>
-            <button class="schreibraum-size-btn" data-size="11" aria-label="Dick"><span style="width:18px; height:18px;"></span></button>
+            <button class="schreibraum-size-btn" data-size="4" aria-label="Dünn"><span style="width:6px; height:6px;"></span></button>
+            <button class="schreibraum-size-btn schreibraum-active" data-size="8" aria-label="Mittel"><span style="width:11px; height:11px;"></span></button>
+            <button class="schreibraum-size-btn" data-size="16" aria-label="Dick"><span style="width:18px; height:18px;"></span></button>
           </div>
           <button class="btn btn-secondary" id="schreibraumEraserBtn">🧽 Radierer</button>
+          <button class="btn btn-secondary" id="schreibraumUndoBtn" disabled>↶ Rückgängig</button>
           <button class="btn btn-secondary" id="schreibraumDrawClearBtn">🗑️ Alles löschen</button>
         </div>
-        <canvas id="schreibraumDrawCanvas" style="width:100%; height:74vh; touch-action:none; border-radius:16px; border:1px solid var(--border); background:#ffffff; display:block; box-shadow:0 4px 16px rgba(15,23,42,0.12);"></canvas>
+        <canvas id="schreibraumDrawCanvas"></canvas>
       </div>
+      <button class="btn btn-big btn-outline" id="schreibraumDoneBtn" style="margin:14px 0 0;">✋ Ich bin fertig</button>
     </div>
   </div>
 
-  <p id="appVersionLabel">v2026-09-24.1</p>
+  <p id="appVersionLabel">v2026-10-26.1</p>
 </div>
 
 <!-- QR Vollbild (Raum-PIN) -->
-<div id="schreibraumQrFullscreen" class="hidden" style="position:fixed; inset:0; background:#ffffff; z-index:300; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
-  <canvas id="schreibraumQrCanvasBig" style="width:min(80vw, 500px); height:min(80vw, 500px); image-rendering:pixelated;"></canvas>
+<div id="schreibraumQrFullscreen" class="hidden" style="position:fixed; inset:0; background:#ffffff; z-index:300; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
+  <canvas id="schreibraumQrCanvasBig" style="width:min(80vw, 70vh); height:min(80vw, 70vh); image-rendering:pixelated;"></canvas>
   <div style="font-size:2rem; font-weight:800; letter-spacing:0.15em;" id="schreibraumQrBigPin">----</div>
+  <div style="color:var(--muted);" id="schreibraumQrBigCount"></div>
   <button class="btn btn-secondary" id="schreibraumQrCloseBtn">Schliessen</button>
+</div>
+
+<!-- Spotlight: eine Antwort gross zur Besprechung -->
+<div id="schreibraumSpotlight" class="hidden" role="dialog" aria-modal="true" aria-labelledby="schreibraumSpotlightName">
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+    <div id="schreibraumSpotlightName" style="font-weight:800; font-size:1.6rem;"></div>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <button class="btn btn-secondary" id="schreibraumSpotlightPrevBtn" aria-label="Vorherige Antwort">‹</button>
+      <span id="schreibraumSpotlightCounter" style="color:var(--muted); font-weight:700;"></span>
+      <button class="btn btn-secondary" id="schreibraumSpotlightNextBtn" aria-label="Nächste Antwort">›</button>
+      <button class="btn btn-secondary" id="schreibraumSpotlightCloseBtn">✕ Schliessen</button>
+    </div>
+  </div>
+  <p id="schreibraumSpotlightQuestion" style="margin:0; color:var(--muted); font-weight:700;"></p>
+  <div id="schreibraumSpotlightBody"></div>
 </div>
 
 <!-- QR Vollbild (App-Link teilen) -->
@@ -213,8 +267,10 @@
   <button class="btn btn-secondary" id="appShareQrCloseBtn">Schliessen</button>
 </div>
 
-<!-- Reaktion (Daumen hoch) - poppt beim Schüler-Gerät unten rechts auf -->
-<div id="schreibraumReactionPopup" class="hidden" style="position:fixed; right:16px; bottom:16px; z-index:250; background:var(--success); color:white; border-radius:50%; width:76px; height:76px; display:flex; align-items:center; justify-content:center; font-size:2.3rem; box-shadow:0 6px 18px rgba(0,0,0,0.28); animation:schreibraumReactionPop 0.4s ease-out;">👍</div>
+<!-- Rückmeldung der Lehrperson - poppt beim Schüler-Gerät unten rechts auf (nur dort sichtbar) -->
+<div id="schreibraumReactionPopup" class="hidden" style="position:fixed; right:16px; bottom:16px; z-index:250; background:var(--success); color:white; border-radius:20px; padding:12px 18px; display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.1rem; box-shadow:0 6px 18px rgba(0,0,0,0.28); animation:schreibraumReactionPop 0.4s ease-out;">
+  <span id="schreibraumReactionEmoji" style="font-size:2.2rem;">👍</span><span id="schreibraumReactionText"></span>
+</div>
 
 <!-- Generic Confirm Modal -->
 <div class="modal-overlay hidden" id="confirmOverlay">
@@ -237,6 +293,8 @@ let confirmCb = null;
 function openConfirm(message, onConfirm, confirmLabel) {
   document.getElementById("confirmMessage").textContent = message;
   document.getElementById("confirmOk").textContent = confirmLabel || "Bestätigen";
+  document.getElementById("confirmOk").className = onConfirm ? "btn btn-danger" : "btn";
+  document.getElementById("confirmCancel").classList.toggle("hidden", !onConfirm);
   confirmCb = onConfirm;
   document.getElementById("confirmOverlay").classList.remove("hidden");
 }
@@ -247,7 +305,13 @@ function showView(name) {
   document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
   document.getElementById(name + "View").classList.remove("hidden");
   document.getElementById("app").classList.toggle("schreibraum-fullboard", name === "schreibraumWrite");
+  document.getElementById("app").classList.toggle("schreibraum-wide", name === "schreibraumHost");
+  if (name === "schreibraumPick") schreibraumRenderResume();
 }
+
+// localStorage kann (privater Modus, gesperrte Website-Daten) fehlen oder werfen
+function storageGet(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } }
+function storageSet(key, value) { try { if (value == null) localStorage.removeItem(key); else localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} }
 
 /* =========================================================================
    QR-CODE-GENERATOR (offline, ohne externe Bibliothek)
@@ -475,121 +539,51 @@ const SCHREIBRAUM_PALETTE = [
   "#ea580c", "#eab308", "#4f46e5", "#059669", "#0d9488", "#be123c", "#a855f7", "#65a30d",
   "#78716c", "#1e293b", "#f472b6", "#0ea5e9"
 ];
+// Rückmeldungen sieht nur die betroffene Person auf dem eigenen Gerät, nie die Klasse
+const SCHREIBRAUM_REACTIONS = [
+  { emoji: "👍", text: "Super!" },
+  { emoji: "⭐", text: "Stark gemacht!" },
+  { emoji: "🤔", text: "Überleg nochmals" }
+];
+const SCHREIBRAUM_ROOM_MAX_AGE_MS = 12 * 60 * 60 * 1000; // ältere Räume gelten als abgelaufen und werden gelöscht
+// Heartbeat sparsam: 30 SuS × alle 4 s hätte das Firebase-Gratiskontingent nach einer Lektion aufgebraucht
+const SCHREIBRAUM_HEARTBEAT_MS = 20000;
+const SCHREIBRAUM_AWAY_MS = 50000;
+const SCHREIBRAUM_HOST_KEY = "schreibraum-host";
+const SCHREIBRAUM_STUDENT_KEY = "schreibraum-student";
 let schreibraumSelectedColor = SCHREIBRAUM_PALETTE[0];
 let schreibraumPin = null, schreibraumIsHost = false;
 let schreibraumStudentId = null, schreibraumStudentName = null;
 let schreibraumStudentsUnsub = null, schreibraumRoomUnsub = null, schreibraumSelfUnsub = null;
-const SCHREIBRAUM_AWAY_MS = 15000;
 let schreibraumHeartbeatIv = null;
 let schreibraumLastStudents = [];
 let schreibraumHostWatchIv = null;
 let schreibraumLastReactionTs = 0, schreibraumLastClearedAt = 0;
+let schreibraumServerOffset = 0; // Serverzeit minus Gerätezeit der Lehrperson (falsch gestellte Uhr ≠ alle «weg»)
 function schreibraumGeneratePin() { return String(Math.floor(Math.random() * 9000) + 1000); }
+function schreibraumRoomRef(pin) { return firebaseDb.collection("writerooms").doc(pin); }
+function schreibraumSafeColor(c) { return /^#[0-9a-f]{6}$/i.test(c || "") ? c : "#94a3b8"; }
+function schreibraumSafeImage(d) { return typeof d === "string" && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(d) ? d : null; }
+function schreibraumHasContent(s) { return !!((s.text || "").trim() || schreibraumSafeImage(s.drawingData)); }
+function schreibraumIsAway(s) {
+  if (s.left || s.active === false) return true;
+  const lastSeenMs = s.lastSeen && typeof s.lastSeen.toMillis === "function" ? s.lastSeen.toMillis() : 0;
+  return lastSeenMs > 0 && Date.now() + schreibraumServerOffset - lastSeenMs > SCHREIBRAUM_AWAY_MS;
+}
 function schreibraumWriteActive() {
   if (!schreibraumPin || !schreibraumStudentId) return;
-  firebaseDb.collection("writerooms").doc(schreibraumPin).collection("students").doc(schreibraumStudentId)
+  schreibraumRoomRef(schreibraumPin).collection("students").doc(schreibraumStudentId)
     .update({ active: !document.hidden, lastSeen: firebase.firestore.FieldValue.serverTimestamp() })
     .catch(err => console.error("Schreibraum: Status konnte nicht aktualisiert werden.", err));
 }
 function schreibraumStartHeartbeat() {
   schreibraumStopHeartbeat();
   document.addEventListener("visibilitychange", schreibraumWriteActive);
-  schreibraumHeartbeatIv = setInterval(schreibraumWriteActive, 4000);
+  schreibraumHeartbeatIv = setInterval(schreibraumWriteActive, SCHREIBRAUM_HEARTBEAT_MS);
 }
 function schreibraumStopHeartbeat() {
   if (schreibraumHeartbeatIv) { clearInterval(schreibraumHeartbeatIv); schreibraumHeartbeatIv = null; }
   document.removeEventListener("visibilitychange", schreibraumWriteActive);
-}
-let schreibraumCurrentQuestion = "";
-function schreibraumRenderCards(students) {
-  return students.map(s => {
-    const lastSeenMs = s.lastSeen && typeof s.lastSeen.toMillis === "function" ? s.lastSeen.toMillis() : 0;
-    const away = s.active === false || (lastSeenMs > 0 && Date.now() - lastSeenMs > SCHREIBRAUM_AWAY_MS);
-    const color = s.color || "#94a3b8";
-    return `
-      <div class="setup-card${away ? " schreibraum-card-away" : ""}" style="padding:12px; border-left:8px solid ${color};">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:6px;">
-          <div style="font-weight:800; font-size:1.1rem;">${escapeHtml(s.name)}${away ? '<span class="schreibraum-away-badge">Abwesend</span>' : ""}</div>
-          <button class="schreibraum-react-btn" data-react-id="${s.id}" title="Daumen hoch senden">👍</button>
-        </div>
-        ${s.mode === "draw" && s.drawingData
-          ? `<img src="${s.drawingData}" style="width:100%; border-radius:8px; border:1px solid var(--border); background:#fff;">`
-          : `<div style="white-space:pre-wrap; min-height:60px; color:var(--text);">${escapeHtml(s.text || "")}</div>`}
-      </div>`;
-  }).join("") || `<p style="color:var(--muted);">Noch niemand beigetreten.</p>`;
-}
-function schreibraumRenderHostSummary() {
-  const students = schreibraumLastStudents;
-  const list = document.getElementById("schreibraumHostNameList");
-  list.innerHTML = students.map(s => {
-    const lastSeenMs = s.lastSeen && typeof s.lastSeen.toMillis === "function" ? s.lastSeen.toMillis() : 0;
-    const away = s.active === false || (lastSeenMs > 0 && Date.now() - lastSeenMs > SCHREIBRAUM_AWAY_MS);
-    const color = s.color || "#94a3b8";
-    return `
-      <span class="schreibraum-name-chip${away ? " schreibraum-card-away" : ""}" style="border-left:6px solid ${color};">
-        ${escapeHtml(s.name)}${away ? '<span class="schreibraum-away-badge">Abwesend</span>' : ""}
-        <button class="schreibraum-react-btn" data-react-id="${s.id}" title="Daumen hoch senden" style="width:24px; height:24px; font-size:0.85rem;">👍</button>
-      </span>`;
-  }).join("") || `<p style="color:var(--muted);">Noch niemand beigetreten.</p>`;
-}
-const SCHREIBRAUM_MONITOR_PAGE_SIZE = 24;
-let schreibraumMonitorZoom = 6;
-let schreibraumMonitorPage = 0;
-function schreibraumRenderMonitorGrid() {
-  const students = schreibraumLastStudents;
-  document.getElementById("schreibraumMonitorCount").textContent = String(students.length);
-  const totalPages = Math.max(1, Math.ceil(students.length / SCHREIBRAUM_MONITOR_PAGE_SIZE));
-  if (schreibraumMonitorPage >= totalPages) schreibraumMonitorPage = totalPages - 1;
-  if (schreibraumMonitorPage < 0) schreibraumMonitorPage = 0;
-  const start = schreibraumMonitorPage * SCHREIBRAUM_MONITOR_PAGE_SIZE;
-  const pageStudents = students.slice(start, start + SCHREIBRAUM_MONITOR_PAGE_SIZE);
-  const grid = document.getElementById("schreibraumMonitorGrid");
-  grid.style.gridTemplateColumns = `repeat(${schreibraumMonitorZoom}, 1fr)`;
-  grid.innerHTML = schreibraumRenderCards(pageStudents);
-  const pager = document.getElementById("schreibraumMonitorPager");
-  pager.classList.toggle("hidden", totalPages <= 1);
-  document.getElementById("schreibraumMonitorPageLabel").textContent = `Seite ${schreibraumMonitorPage + 1}/${totalPages}`;
-  document.getElementById("schreibraumMonitorPrevBtn").disabled = schreibraumMonitorPage === 0;
-  document.getElementById("schreibraumMonitorNextBtn").disabled = schreibraumMonitorPage >= totalPages - 1;
-}
-function schreibraumRenderAll() {
-  schreibraumRenderHostSummary();
-  schreibraumRenderMonitorGrid();
-}
-function schreibraumHandleReactClick(e) {
-  const btn = e.target.closest("[data-react-id]");
-  if (!btn || !schreibraumPin) return;
-  const id = btn.dataset.reactId;
-  firebaseDb.collection("writerooms").doc(schreibraumPin).collection("students").doc(id)
-    .update({ reaction: { emoji: "👍", ts: Date.now() } })
-    .catch(err => console.error("Schreibraum: Reaktion konnte nicht gesendet werden.", err));
-}
-document.getElementById("schreibraumHostNameList").addEventListener("click", schreibraumHandleReactClick);
-document.getElementById("schreibraumMonitorGrid").addEventListener("click", schreibraumHandleReactClick);
-document.getElementById("schreibraumMonitorZoomSlider").addEventListener("input", (e) => {
-  schreibraumMonitorZoom = Number(e.target.value);
-  document.getElementById("schreibraumMonitorZoomLabel").textContent = `${schreibraumMonitorZoom} Spalten`;
-  schreibraumRenderMonitorGrid();
-});
-document.getElementById("schreibraumMonitorPrevBtn").addEventListener("click", () => {
-  schreibraumMonitorPage--;
-  schreibraumRenderMonitorGrid();
-});
-document.getElementById("schreibraumMonitorNextBtn").addEventListener("click", () => {
-  schreibraumMonitorPage++;
-  schreibraumRenderMonitorGrid();
-});
-function schreibraumRenderMonitorQuestion() {
-  const qEl = document.getElementById("schreibraumMonitorQuestion");
-  if (schreibraumCurrentQuestion) { qEl.textContent = "❓ " + schreibraumCurrentQuestion; qEl.classList.remove("hidden"); }
-  else { qEl.classList.add("hidden"); }
-}
-function schreibraumStartHostWatch() {
-  schreibraumStopHostWatch();
-  schreibraumHostWatchIv = setInterval(schreibraumRenderAll, 3000);
-}
-function schreibraumStopHostWatch() {
-  if (schreibraumHostWatchIv) { clearInterval(schreibraumHostWatchIv); schreibraumHostWatchIv = null; }
 }
 function schreibraumStopListening() {
   if (schreibraumStudentsUnsub) { schreibraumStudentsUnsub(); schreibraumStudentsUnsub = null; }
@@ -609,53 +603,384 @@ async function schreibraumCheckReady() {
   if (!ok) schreibraumShowNote("Verbindung zum Schreibraum-Server konnte nicht hergestellt werden. Prüfe die Internetverbindung.");
   return ok;
 }
+async function schreibraumDeleteRoomData(pin) {
+  const ref = schreibraumRoomRef(pin);
+  const students = await ref.collection("students").get();
+  const batch = firebaseDb.batch();
+  students.forEach(d => batch.delete(d.ref));
+  batch.delete(ref);
+  await batch.commit();
+}
+// Datenschutz: Namen und Antworten nicht unbegrenzt liegen lassen
+async function schreibraumCleanupStaleRooms() {
+  try {
+    const cutoff = Date.now() - SCHREIBRAUM_ROOM_MAX_AGE_MS;
+    const snap = await firebaseDb.collection("writerooms").where("createdAt", "<", cutoff).limit(10).get();
+    for (const d of snap.docs) await schreibraumDeleteRoomData(d.id);
+  } catch (e) {
+    console.warn("Schreibraum: Alte Räume konnten nicht aufgeräumt werden.", e);
+  }
+}
+
+/* ---- Startseite: angefangene Sitzung fortsetzen ---- */
+function schreibraumRenderResume() {
+  const host = storageGet(SCHREIBRAUM_HOST_KEY);
+  const student = storageGet(SCHREIBRAUM_STUDENT_KEY);
+  const hostBtn = document.getElementById("schreibraumResumeHostBtn");
+  const studentBtn = document.getElementById("schreibraumResumeStudentBtn");
+  const hostValid = host && host.pin && Date.now() - (host.createdAt || 0) < SCHREIBRAUM_ROOM_MAX_AGE_MS;
+  hostBtn.classList.toggle("hidden", !hostValid);
+  if (hostValid) hostBtn.textContent = `↩️ Meinen Raum ${host.pin} wieder öffnen`;
+  studentBtn.classList.toggle("hidden", !(student && student.pin));
+  if (student && student.pin) studentBtn.textContent = `↩️ Weiterschreiben als ${student.name} (PIN ${student.pin})`;
+  const joinResume = document.getElementById("schreibraumJoinResumeBtn");
+  joinResume.classList.toggle("hidden", !(student && student.pin));
+  if (student && student.pin) joinResume.textContent = `↩️ Weiterschreiben als ${student.name} (PIN ${student.pin})`;
+}
+
+/* =========================================================================
+   LEHRPERSON
+   ========================================================================= */
+let schreibraumConcealed = false, schreibraumAnonymous = false, schreibraumLocked = false;
+const schreibraumRevealed = new Set();
+const schreibraumCardCache = new Map();
+let schreibraumSentQuestion = "";
+let schreibraumSpotlightId = null;
+
 document.getElementById("schreibraumHostBtn").addEventListener("click", async () => {
   const ok = await schreibraumCheckReady();
   if (!ok) return;
-  schreibraumIsHost = true;
-  let pin = schreibraumGeneratePin(), exists = true, attempts = 0;
+  schreibraumCleanupStaleRooms();
   try {
-    do {
-      pin = schreibraumGeneratePin();
-      const doc = await firebaseDb.collection("writerooms").doc(pin).get();
-      exists = doc.exists;
-      attempts++;
-    } while (exists && attempts < 5);
-    schreibraumPin = pin;
-    await firebaseDb.collection("writerooms").doc(pin).set({ createdAt: Date.now(), phase: "open", question: "" });
+    let pin = null;
+    for (let attempt = 0; attempt < 20 && !pin; attempt++) {
+      const candidate = schreibraumGeneratePin();
+      const doc = await schreibraumRoomRef(candidate).get();
+      if (!doc.exists) pin = candidate;
+      else if (Date.now() - (doc.data().createdAt || 0) > SCHREIBRAUM_ROOM_MAX_AGE_MS) {
+        await schreibraumDeleteRoomData(candidate);
+        pin = candidate;
+      }
+    }
+    if (!pin) throw new Error("Keine freie PIN gefunden.");
+    const createdAt = Date.now();
+    await schreibraumRoomRef(pin).set({ createdAt, phase: "open", question: "" });
+    storageSet(SCHREIBRAUM_HOST_KEY, { pin, createdAt });
+    await schreibraumEnterHost(pin);
   } catch (e) {
     console.error("Schreibraum: Raum konnte nicht erstellt werden.", e);
     openConfirm("Raum konnte nicht erstellt werden. Prüfe die Internetverbindung.", null, "OK");
-    return;
   }
+});
+document.getElementById("schreibraumResumeHostBtn").addEventListener("click", async () => {
+  const host = storageGet(SCHREIBRAUM_HOST_KEY);
+  if (!host || !(await schreibraumCheckReady())) return;
+  try {
+    const doc = await schreibraumRoomRef(host.pin).get();
+    if (!doc.exists || doc.data().phase === "closed") {
+      storageSet(SCHREIBRAUM_HOST_KEY, null);
+      schreibraumRenderResume();
+      openConfirm("Dieser Raum existiert nicht mehr. Eröffne einen neuen Raum.", null, "OK");
+      return;
+    }
+    await schreibraumEnterHost(host.pin);
+  } catch (e) {
+    console.error("Schreibraum: Raum konnte nicht geöffnet werden.", e);
+    openConfirm("Raum konnte nicht geöffnet werden. Prüfe die Internetverbindung.", null, "OK");
+  }
+});
+
+async function schreibraumEnterHost(pin) {
+  schreibraumIsHost = true;
+  schreibraumPin = pin;
+  const roomRef = schreibraumRoomRef(pin);
+  // Uhrabgleich mit dem Server, damit «nicht in der App» auch bei falsch gestellter Laptop-Uhr stimmt
+  const before = Date.now();
+  await roomRef.update({ serverPing: firebase.firestore.FieldValue.serverTimestamp() });
+  const roomDoc = await roomRef.get();
+  const room = roomDoc.data() || {};
+  if (room.serverPing && typeof room.serverPing.toMillis === "function") {
+    schreibraumServerOffset = room.serverPing.toMillis() - (before + Date.now()) / 2;
+  }
+  schreibraumSentQuestion = room.question || "";
+  schreibraumLocked = room.phase === "locked";
+  schreibraumConcealed = false;
+  schreibraumAnonymous = false;
+  schreibraumRevealed.clear();
+  schreibraumCardCache.clear();
+  schreibraumLastStudents = [];
   document.getElementById("schreibraumPinDisplay").textContent = pin;
-  document.getElementById("schreibraumRoomPin").textContent = "· PIN " + pin;
-  document.getElementById("schreibraumMonitorPin").textContent = "· PIN " + pin;
-  document.getElementById("schreibraumQuestionInput").value = "";
-  schreibraumCurrentQuestion = "";
-  schreibraumRenderMonitorQuestion();
-  document.getElementById("schreibraumHostNameList").innerHTML = "";
+  document.getElementById("schreibraumQuestionInput").value = schreibraumSentQuestion;
   document.getElementById("schreibraumMonitorGrid").innerHTML = "";
-  document.getElementById("schreibraumHostCount").textContent = "0";
-  document.getElementById("schreibraumMonitorCount").textContent = "0";
   schreibraumMonitorPage = 0;
+  schreibraumMonitorZoom = Math.max(1, Math.min(6, Math.floor(window.innerWidth / 240)));
+  document.getElementById("schreibraumMonitorZoomSlider").value = String(schreibraumMonitorZoom);
+  document.getElementById("schreibraumMonitorZoomLabel").textContent = String(schreibraumMonitorZoom);
+  schreibraumRenderQuestionState();
+  schreibraumRenderToggles();
   showView("schreibraumHost");
-  const joinUrl = `${location.origin}${location.pathname}?join=${pin}`;
-  qrDrawToCanvas(document.getElementById("schreibraumQrCanvas"), joinUrl, 4);
+  qrDrawToCanvas(document.getElementById("schreibraumQrCanvas"), schreibraumJoinUrl(), 4);
   schreibraumStopListening();
-  schreibraumStudentsUnsub = firebaseDb.collection("writerooms").doc(pin).collection("students").onSnapshot(snap => {
+  schreibraumStudentsUnsub = roomRef.collection("students").onSnapshot(snap => {
     const students = [];
     snap.forEach(d => students.push({ id: d.id, ...d.data() }));
     students.sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
-    document.getElementById("schreibraumHostCount").textContent = String(students.length);
     schreibraumLastStudents = students;
     schreibraumRenderAll();
   }, err => console.error("Schreibraum: Antworten konnten nicht geladen werden.", err));
   schreibraumStartHostWatch();
+}
+function schreibraumJoinUrl() { return `${location.origin}${location.pathname}?join=${schreibraumPin}`; }
+
+function schreibraumRenderToggles() {
+  document.getElementById("schreibraumConcealBtn").classList.toggle("btn-active", schreibraumConcealed);
+  document.getElementById("schreibraumAnonBtn").classList.toggle("btn-active", schreibraumAnonymous);
+  const lockBtn = document.getElementById("schreibraumLockBtn");
+  lockBtn.classList.toggle("btn-active", schreibraumLocked);
+  lockBtn.textContent = schreibraumLocked ? "✍️ Stifte freigeben" : "✋ Stifte weg";
+  document.getElementById("schreibraumConcealHint").classList.toggle("hidden", !schreibraumConcealed);
+}
+function schreibraumRenderQuestionState() {
+  const current = document.getElementById("schreibraumQuestionInput").value.trim();
+  const el = document.getElementById("schreibraumQuestionState");
+  if (current === schreibraumSentQuestion.trim()) {
+    el.textContent = schreibraumSentQuestion ? "✓ Diese Frage sehen die SuS gerade." : "Die SuS sehen die Frage erst nach «Senden».";
+  } else {
+    el.textContent = "✏️ Noch nicht gesendet – die SuS sehen weiterhin die alte Frage.";
+  }
+}
+function schreibraumSendQuestion() {
+  if (!schreibraumPin) return;
+  const question = document.getElementById("schreibraumQuestionInput").value.trim();
+  schreibraumRoomRef(schreibraumPin).update({ question, questionTs: Date.now() })
+    .then(() => { schreibraumSentQuestion = question; schreibraumRenderQuestionState(); })
+    .catch(err => {
+      console.error("Schreibraum: Frage konnte nicht gesendet werden.", err);
+      openConfirm("Frage konnte nicht gesendet werden. Prüfe die Internetverbindung.", null, "OK");
+    });
+}
+document.getElementById("schreibraumQuestionInput").addEventListener("input", schreibraumRenderQuestionState);
+document.getElementById("schreibraumQuestionInput").addEventListener("keydown", (e) => { if (e.key === "Enter") schreibraumSendQuestion(); });
+document.getElementById("schreibraumQuestionSendBtn").addEventListener("click", schreibraumSendQuestion);
+
+document.getElementById("schreibraumConcealBtn").addEventListener("click", () => {
+  schreibraumConcealed = !schreibraumConcealed;
+  schreibraumRevealed.clear();
+  schreibraumRenderToggles();
+  schreibraumRenderMonitorGrid();
 });
+document.getElementById("schreibraumAnonBtn").addEventListener("click", () => {
+  schreibraumAnonymous = !schreibraumAnonymous;
+  schreibraumRenderToggles();
+  schreibraumRenderMonitorGrid();
+});
+document.getElementById("schreibraumLockBtn").addEventListener("click", () => {
+  const locked = !schreibraumLocked;
+  schreibraumRoomRef(schreibraumPin).update({ phase: locked ? "locked" : "open" })
+    .then(() => { schreibraumLocked = locked; schreibraumRenderToggles(); })
+    .catch(err => console.error("Schreibraum: Sperre konnte nicht gesetzt werden.", err));
+});
+document.getElementById("schreibraumNewRoundBtn").addEventListener("click", () => {
+  if (!schreibraumLastStudents.length) return;
+  openConfirm(`Alle ${schreibraumLastStudents.length} Boards leeren für die nächste Frage? Die SuS bleiben im Raum. Tipp: vorher mit «⬇️ Antworten sichern» speichern.`, async () => {
+    try {
+      const batch = firebaseDb.batch();
+      const clearedAt = Date.now();
+      const del = firebase.firestore.FieldValue.delete();
+      schreibraumLastStudents.forEach(s => {
+        batch.update(schreibraumRoomRef(schreibraumPin).collection("students").doc(s.id), { text: "", drawingData: del, reaction: del, done: false, clearedAt, updatedAt: clearedAt });
+      });
+      await batch.commit();
+      schreibraumRevealed.clear();
+    } catch (e) {
+      console.error("Schreibraum: Boards konnten nicht geleert werden.", e);
+      openConfirm("Boards konnten nicht geleert werden. Prüfe die Internetverbindung.", null, "OK");
+    }
+  }, "Alle leeren");
+});
+
+/* ---- Karten ---- */
+function schreibraumDisplayName(s, index) { return schreibraumAnonymous ? `Board ${index + 1}` : (s.name || "?"); }
+function schreibraumCardBodyHtml(s) {
+  const text = (s.text || "").trim() ? s.text : "";
+  const img = schreibraumSafeImage(s.drawingData);
+  if (!text && !img) return `<div class="schreibraum-card-empty">– noch leer –</div>`;
+  return (text ? `<div class="schreibraum-card-text">${escapeHtml(text)}</div>` : "") + (img ? `<img src="${img}" alt="Zeichnung">` : "");
+}
+function schreibraumCardHtml(s, index) {
+  const away = schreibraumIsAway(s);
+  const hasContent = schreibraumHasContent(s);
+  const concealed = schreibraumConcealed && hasContent && !schreibraumRevealed.has(s.id);
+  const color = schreibraumAnonymous ? "#94a3b8" : schreibraumSafeColor(s.color);
+  const badges = (s.done ? '<span class="schreibraum-away-badge schreibraum-done-badge">✅ fertig</span>' : "")
+    + (s.left ? '<span class="schreibraum-away-badge">hat verlassen</span>' : away ? '<span class="schreibraum-away-badge">nicht in der App</span>' : "");
+  const lastReaction = s.reaction && s.reaction.emoji ? `<span class="schreibraum-last-reaction" title="Zuletzt gesendet">${escapeHtml(s.reaction.emoji)}</span>` : "";
+  const reactButtons = SCHREIBRAUM_REACTIONS.map(r => `<button class="schreibraum-react-btn" data-action="react" data-emoji="${r.emoji}" title="«${escapeHtml(r.text)}» nur an diese Person senden">${r.emoji}</button>`).join("");
+  return `
+    <div class="setup-card schreibraum-card${away ? " schreibraum-card-away" : ""}${concealed ? " schreibraum-concealed" : ""}" data-card-id="${escapeHtml(s.id)}" style="border-left-color:${color};">
+      <div class="schreibraum-card-head">
+        <div class="schreibraum-card-name">${escapeHtml(schreibraumDisplayName(s, index))}${badges}${lastReaction}</div>
+        <div class="schreibraum-card-actions">
+          ${hasContent ? reactButtons + '<button class="schreibraum-react-btn" data-action="spot" title="Gross zeigen">🔍</button>' : ""}
+          <button class="schreibraum-react-btn" data-action="kick" title="Aus dem Raum entfernen">✕</button>
+        </div>
+      </div>
+      <div class="schreibraum-card-body">${schreibraumCardBodyHtml(s)}</div>
+      ${concealed ? '<div class="schreibraum-conceal-label">🙈 antippen zum Aufdecken</div>' : ""}
+    </div>`;
+}
+function schreibraumRenderStats() {
+  const students = schreibraumLastStudents.filter(s => !s.left);
+  const answered = students.filter(schreibraumHasContent).length;
+  const done = students.filter(s => s.done).length;
+  const html = students.length
+    ? `<b>${students.length}</b> im Raum · <b>${answered}</b> mit Antwort · <b>${done}</b> fertig`
+    : "Noch niemand beigetreten";
+  document.getElementById("schreibraumHostStats").innerHTML = html;
+  document.getElementById("schreibraumQrBigCount").textContent = `${students.length} beigetreten`;
+}
+const SCHREIBRAUM_MONITOR_PAGE_SIZE = 24;
+let schreibraumMonitorZoom = 4;
+let schreibraumMonitorPage = 0;
+// Nur geänderte Karten neu aufbauen: verhindert Flackern und neu ladende Bilder bei 30 Boards
+function schreibraumRenderMonitorGrid() {
+  const students = schreibraumLastStudents;
+  const totalPages = Math.max(1, Math.ceil(students.length / SCHREIBRAUM_MONITOR_PAGE_SIZE));
+  if (schreibraumMonitorPage >= totalPages) schreibraumMonitorPage = totalPages - 1;
+  if (schreibraumMonitorPage < 0) schreibraumMonitorPage = 0;
+  const start = schreibraumMonitorPage * SCHREIBRAUM_MONITOR_PAGE_SIZE;
+  const pageStudents = students.slice(start, start + SCHREIBRAUM_MONITOR_PAGE_SIZE);
+  const grid = document.getElementById("schreibraumMonitorGrid");
+  grid.style.gridTemplateColumns = `repeat(${schreibraumMonitorZoom}, minmax(0, 1fr))`;
+  const pager = document.getElementById("schreibraumMonitorPager");
+  pager.classList.toggle("hidden", totalPages <= 1);
+  document.getElementById("schreibraumMonitorPageLabel").textContent = `Seite ${schreibraumMonitorPage + 1}/${totalPages}`;
+  document.getElementById("schreibraumMonitorPrevBtn").disabled = schreibraumMonitorPage === 0;
+  document.getElementById("schreibraumMonitorNextBtn").disabled = schreibraumMonitorPage >= totalPages - 1;
+  if (!pageStudents.length) {
+    schreibraumCardCache.clear();
+    grid.innerHTML = `<p style="color:var(--muted); grid-column:1/-1;">Noch niemand beigetreten. Tippe auf den QR-Code, um ihn gross zu zeigen.</p>`;
+    return;
+  }
+  Array.from(grid.children).forEach(el => { if (!el.dataset.cardId) el.remove(); });
+  const existing = new Map();
+  Array.from(grid.children).forEach(el => existing.set(el.dataset.cardId, el));
+  pageStudents.forEach((s, i) => {
+    const html = schreibraumCardHtml(s, start + i);
+    let el = existing.get(s.id);
+    if (!el || schreibraumCardCache.get(s.id) !== html) {
+      const tpl = document.createElement("template");
+      tpl.innerHTML = html.trim();
+      const fresh = tpl.content.firstElementChild;
+      if (el) el.replaceWith(fresh);
+      el = fresh;
+      schreibraumCardCache.set(s.id, html);
+    }
+    existing.delete(s.id);
+    if (grid.children[i] !== el) grid.insertBefore(el, grid.children[i] || null);
+  });
+  existing.forEach((el, id) => { el.remove(); schreibraumCardCache.delete(id); });
+}
+function schreibraumRenderAll() {
+  schreibraumRenderStats();
+  schreibraumRenderMonitorGrid();
+  if (schreibraumSpotlightId) schreibraumRenderSpotlight();
+}
+document.getElementById("schreibraumMonitorGrid").addEventListener("click", (e) => {
+  const card = e.target.closest("[data-card-id]");
+  if (!card || !schreibraumPin) return;
+  const id = card.dataset.cardId;
+  const actionBtn = e.target.closest("[data-action]");
+  if (actionBtn) {
+    const action = actionBtn.dataset.action;
+    if (action === "react") schreibraumSendReaction(id, actionBtn.dataset.emoji);
+    else if (action === "spot") schreibraumOpenSpotlight(id);
+    else if (action === "kick") {
+      const s = schreibraumLastStudents.find(x => x.id === id);
+      openConfirm(`«${s ? s.name : "?"}» aus dem Raum entfernen? Das Board wird gelöscht.`, () => {
+        schreibraumRoomRef(schreibraumPin).collection("students").doc(id).delete()
+          .catch(err => console.error("Schreibraum: Entfernen fehlgeschlagen.", err));
+      }, "Entfernen");
+    }
+    return;
+  }
+  if (card.classList.contains("schreibraum-concealed")) {
+    schreibraumRevealed.add(id);
+    schreibraumRenderMonitorGrid();
+  }
+});
+function schreibraumSendReaction(id, emoji) {
+  schreibraumRoomRef(schreibraumPin).collection("students").doc(id)
+    .update({ reaction: { emoji, ts: Date.now() } })
+    .catch(err => console.error("Schreibraum: Reaktion konnte nicht gesendet werden.", err));
+}
+document.getElementById("schreibraumMonitorZoomSlider").addEventListener("input", (e) => {
+  schreibraumMonitorZoom = Number(e.target.value);
+  document.getElementById("schreibraumMonitorZoomLabel").textContent = String(schreibraumMonitorZoom);
+  schreibraumRenderMonitorGrid();
+});
+document.getElementById("schreibraumMonitorPrevBtn").addEventListener("click", () => {
+  schreibraumMonitorPage--;
+  schreibraumRenderMonitorGrid();
+});
+document.getElementById("schreibraumMonitorNextBtn").addEventListener("click", () => {
+  schreibraumMonitorPage++;
+  schreibraumRenderMonitorGrid();
+});
+function schreibraumStartHostWatch() {
+  schreibraumStopHostWatch();
+  // nur für den Status «nicht in der App», der sich ohne neue Daten ändert
+  schreibraumHostWatchIv = setInterval(schreibraumRenderAll, 10000);
+}
+function schreibraumStopHostWatch() {
+  if (schreibraumHostWatchIv) { clearInterval(schreibraumHostWatchIv); schreibraumHostWatchIv = null; }
+}
+
+/* ---- Spotlight: eine Antwort gross besprechen ---- */
+function schreibraumSpotlightList() { return schreibraumLastStudents.filter(schreibraumHasContent); }
+function schreibraumOpenSpotlight(id) {
+  schreibraumSpotlightId = id;
+  schreibraumRevealed.add(id);
+  schreibraumRenderMonitorGrid();
+  schreibraumRenderSpotlight();
+  document.getElementById("schreibraumSpotlight").classList.remove("hidden");
+}
+function schreibraumCloseSpotlight() {
+  schreibraumSpotlightId = null;
+  document.getElementById("schreibraumSpotlight").classList.add("hidden");
+}
+function schreibraumRenderSpotlight() {
+  const list = schreibraumSpotlightList();
+  const idx = list.findIndex(s => s.id === schreibraumSpotlightId);
+  if (idx < 0) { schreibraumCloseSpotlight(); return; }
+  const s = list[idx];
+  document.getElementById("schreibraumSpotlightName").textContent = schreibraumDisplayName(s, schreibraumLastStudents.indexOf(s));
+  document.getElementById("schreibraumSpotlightQuestion").textContent = schreibraumSentQuestion ? "❓ " + schreibraumSentQuestion : "";
+  document.getElementById("schreibraumSpotlightCounter").textContent = `${idx + 1}/${list.length}`;
+  const body = document.getElementById("schreibraumSpotlightBody");
+  const html = schreibraumCardBodyHtml(s);
+  if (body.dataset.html !== html) { body.innerHTML = html; body.dataset.html = html; }
+}
+function schreibraumStepSpotlight(dir) {
+  const list = schreibraumSpotlightList();
+  if (!list.length) return;
+  const idx = list.findIndex(s => s.id === schreibraumSpotlightId);
+  const next = list[(idx + dir + list.length) % list.length];
+  schreibraumOpenSpotlight(next.id);
+}
+document.getElementById("schreibraumSpotlightPrevBtn").addEventListener("click", () => schreibraumStepSpotlight(-1));
+document.getElementById("schreibraumSpotlightNextBtn").addEventListener("click", () => schreibraumStepSpotlight(1));
+document.getElementById("schreibraumSpotlightCloseBtn").addEventListener("click", schreibraumCloseSpotlight);
+document.addEventListener("keydown", (e) => {
+  if (!schreibraumSpotlightId) return;
+  if (e.key === "Escape") schreibraumCloseSpotlight();
+  else if (e.key === "ArrowRight") schreibraumStepSpotlight(1);
+  else if (e.key === "ArrowLeft") schreibraumStepSpotlight(-1);
+});
+
+/* ---- QR ---- */
 document.getElementById("schreibraumQrOpenBtn").addEventListener("click", () => {
-  const joinUrl = `${location.origin}${location.pathname}?join=${schreibraumPin}`;
-  qrDrawToCanvas(document.getElementById("schreibraumQrCanvasBig"), joinUrl, 10);
+  qrDrawToCanvas(document.getElementById("schreibraumQrCanvasBig"), schreibraumJoinUrl(), 10);
   document.getElementById("schreibraumQrBigPin").textContent = schreibraumPin;
   document.getElementById("schreibraumQrFullscreen").classList.remove("hidden");
 });
@@ -673,50 +998,50 @@ document.getElementById("appShareQrBtn").addEventListener("click", () => {
 document.getElementById("appShareQrCloseBtn").addEventListener("click", () => {
   document.getElementById("appShareQrFullscreen").style.display = "none";
 });
-let schreibraumQuestionSaveTimeout = null;
-document.getElementById("schreibraumQuestionInput").addEventListener("input", (e) => {
-  if (!schreibraumPin) return;
-  schreibraumCurrentQuestion = e.target.value;
-  schreibraumRenderMonitorQuestion();
-  clearTimeout(schreibraumQuestionSaveTimeout);
-  const question = e.target.value;
-  schreibraumQuestionSaveTimeout = setTimeout(() => {
-    firebaseDb.collection("writerooms").doc(schreibraumPin).update({ question }).catch(err => console.error("Schreibraum: Frage konnte nicht gespeichert werden.", err));
-  }, 400);
+
+/* ---- Sichern und Schliessen ---- */
+document.getElementById("schreibraumExportBtn").addEventListener("click", () => {
+  const now = new Date();
+  const stamp = now.toISOString().slice(0, 10);
+  const sections = schreibraumLastStudents.map(s => `
+    <section style="border:1px solid #e2e8f0; border-left:8px solid ${schreibraumSafeColor(s.color)}; border-radius:10px; padding:12px; margin:0 0 12px; page-break-inside:avoid;">
+      <h2 style="margin:0 0 6px; font-size:1.1rem;">${escapeHtml(s.name)}${s.done ? " ✅" : ""}</h2>
+      ${(s.text || "").trim() ? `<p style="white-space:pre-wrap; margin:0;">${escapeHtml(s.text)}</p>` : ""}
+      ${schreibraumSafeImage(s.drawingData) ? `<img src="${schreibraumSafeImage(s.drawingData)}" style="max-width:100%; border:1px solid #e2e8f0; border-radius:8px; margin-top:6px;">` : ""}
+      ${schreibraumHasContent(s) ? "" : "<p style=\"color:#64748b; margin:0;\"><em>keine Antwort</em></p>"}
+    </section>`).join("");
+  const html = `<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Schreibraum ${escapeHtml(stamp)}</title></head>
+    <body style="font-family:-apple-system, Segoe UI, Roboto, sans-serif; max-width:900px; margin:24px auto; padding:0 16px; color:#0f172a;">
+    <h1 style="font-size:1.4rem;">Schreibraum · ${escapeHtml(now.toLocaleString("de-CH"))}</h1>
+    ${schreibraumSentQuestion ? `<p style="font-weight:700;">❓ ${escapeHtml(schreibraumSentQuestion)}</p>` : ""}
+    ${sections || "<p>Keine Antworten.</p>"}</body></html>`;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+  a.download = `schreibraum-${stamp}-${schreibraumPin}.html`;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 });
 document.getElementById("schreibraumHostCloseBtn").addEventListener("click", () => {
-  openConfirm("Raum wirklich schliessen? Die Boards bleiben bestehen, aber du verlässt die Übersicht.", () => {
+  openConfirm("Raum schliessen? Alle Antworten und Namen werden gelöscht, die SuS werden abgemeldet. Tipp: vorher mit «⬇️ Antworten sichern» speichern.", async () => {
+    const pin = schreibraumPin;
     schreibraumStopListening();
+    schreibraumCloseSpotlight();
+    storageSet(SCHREIBRAUM_HOST_KEY, null);
+    schreibraumPin = null;
     showView("schreibraumPick");
-  }, "Schliessen");
-});
-document.getElementById("schreibraumClearAllBtn").addEventListener("click", () => {
-  if (!schreibraumLastStudents.length) return;
-  openConfirm(`Alle ${schreibraumLastStudents.length} Boardinhalte wirklich löschen? Die SuS bleiben im Raum eingetragen.`, async () => {
     try {
-      const batch = firebaseDb.batch();
-      const clearedAt = Date.now();
-      schreibraumLastStudents.forEach(s => {
-        const ref = firebaseDb.collection("writerooms").doc(schreibraumPin).collection("students").doc(s.id);
-        batch.update(ref, { text: "", drawingData: firebase.firestore.FieldValue.delete(), clearedAt, updatedAt: clearedAt });
-      });
-      await batch.commit();
+      await schreibraumRoomRef(pin).update({ phase: "closed" });
+      await schreibraumDeleteRoomData(pin);
     } catch (e) {
-      console.error("Schreibraum: Boards konnten nicht geleert werden.", e);
-      openConfirm("Boards konnten nicht geleert werden. Prüfe die Internetverbindung.", null, "OK");
+      console.error("Schreibraum: Raum konnte nicht gelöscht werden.", e);
     }
-  }, "Alle löschen");
-});
-document.getElementById("schreibraumMonitorOpenBtn").addEventListener("click", () => {
-  schreibraumMonitorPage = 0;
-  schreibraumRenderMonitorGrid();
-  showView("schreibraumMonitor");
-});
-document.getElementById("schreibraumMonitorBackBtn").addEventListener("click", () => {
-  showView("schreibraumHost");
+  }, "Schliessen & löschen");
 });
 
-/* ---- Beitreten: Boardfarbe wählen ---- */
+/* =========================================================================
+   SCHÜLERINNEN UND SCHÜLER
+   ========================================================================= */
 function schreibraumRenderJoinColors() {
   const row = document.getElementById("schreibraumJoinColorRow");
   row.innerHTML = SCHREIBRAUM_PALETTE.map((c, i) => `<button class="schreibraum-color-swatch${i === 0 ? " schreibraum-active" : ""}" data-color="${c}" style="background:${c};" aria-label="Farbe ${i + 1}"></button>`).join("");
@@ -732,112 +1057,290 @@ document.getElementById("schreibraumGoJoinBtn").addEventListener("click", () => 
   document.getElementById("schreibraumJoinNameInput").value = "";
   document.getElementById("schreibraumJoinError").classList.add("hidden");
   showView("schreibraumJoin");
+  schreibraumRenderResume();
   document.getElementById("schreibraumJoinPinInput").focus();
 });
 document.querySelectorAll("[data-back-pick]").forEach(b => b.addEventListener("click", () => showView("schreibraumPick")));
+function schreibraumJoinErr(text) {
+  const errEl = document.getElementById("schreibraumJoinError");
+  errEl.textContent = text;
+  errEl.classList.remove("hidden");
+}
 document.getElementById("schreibraumJoinBtn").addEventListener("click", async () => {
   const pin = document.getElementById("schreibraumJoinPinInput").value.trim();
-  const name = document.getElementById("schreibraumJoinNameInput").value.trim();
-  const errEl = document.getElementById("schreibraumJoinError");
-  errEl.classList.add("hidden");
-  if (!pin) { errEl.textContent = "Bitte die PIN eingeben."; errEl.classList.remove("hidden"); return; }
-  if (!name) { errEl.textContent = "Bitte einen Namen eingeben."; errEl.classList.remove("hidden"); return; }
-  const ok = await ensureFirebase();
-  if (!ok) { errEl.textContent = "Keine Verbindung zum Schreibraum-Server möglich."; errEl.classList.remove("hidden"); return; }
+  const name = document.getElementById("schreibraumJoinNameInput").value.trim().replace(/\s+/g, " ");
+  document.getElementById("schreibraumJoinError").classList.add("hidden");
+  if (!/^\d{4}$/.test(pin)) { schreibraumJoinErr("Bitte die 4-stellige PIN eingeben."); return; }
+  if (!name) { schreibraumJoinErr("Bitte einen Namen eingeben."); return; }
+  const btn = document.getElementById("schreibraumJoinBtn");
+  btn.disabled = true;
   try {
-    const roomRef = firebaseDb.collection("writerooms").doc(pin);
+    const ok = await ensureFirebase();
+    if (!ok) { schreibraumJoinErr("Keine Verbindung zum Schreibraum-Server möglich."); return; }
+    const roomRef = schreibraumRoomRef(pin);
     const roomDoc = await roomRef.get();
-    if (!roomDoc.exists) { errEl.textContent = "Diese PIN existiert nicht."; errEl.classList.remove("hidden"); return; }
-    schreibraumIsHost = false;
-    schreibraumPin = pin;
-    schreibraumStudentName = name;
-    schreibraumLastReactionTs = 0;
-    schreibraumLastClearedAt = 0;
-    const studentRef = await roomRef.collection("students").add({ name, text: "", mode: "text", color: schreibraumSelectedColor, joinedAt: Date.now(), updatedAt: Date.now(), active: true, lastSeen: firebase.firestore.FieldValue.serverTimestamp() });
-    schreibraumStudentId = studentRef.id;
-    document.getElementById("schreibraumWriteName").textContent = name;
-    document.getElementById("schreibraumWriteCard").style.setProperty("--board-color", schreibraumSelectedColor);
-    document.getElementById("schreibraumWriteTextarea").value = "";
-    document.getElementById("schreibraumWriteQuestion").classList.add("hidden");
-    schreibraumSetMode("text");
-    showView("schreibraumWrite");
-    schreibraumStopListening();
-    schreibraumStartHeartbeat();
-    schreibraumRoomUnsub = roomRef.onSnapshot(snap => {
-      const room = snap.data();
-      if (!room) return;
-      const qEl = document.getElementById("schreibraumWriteQuestion");
-      if (room.question) { qEl.textContent = "❓ " + room.question; qEl.classList.remove("hidden"); }
-      else { qEl.classList.add("hidden"); }
-    }, err => console.error("Schreibraum: Raum-Update fehlgeschlagen.", err));
-    schreibraumSelfUnsub = studentRef.onSnapshot(snap => {
-      const data = snap.data();
-      if (!data) return;
-      if (data.reaction && data.reaction.ts && data.reaction.ts !== schreibraumLastReactionTs) {
-        schreibraumLastReactionTs = data.reaction.ts;
-        schreibraumShowReaction(data.reaction.emoji || "👍");
-      }
-      if (data.clearedAt && data.clearedAt !== schreibraumLastClearedAt) {
-        schreibraumLastClearedAt = data.clearedAt;
-        document.getElementById("schreibraumWriteTextarea").value = "";
-        if (schreibraumMode === "draw") schreibraumSetupCanvas();
-      }
-    }, err => console.error("Schreibraum: Eigenes Board konnte nicht beobachtet werden.", err));
+    const room = roomDoc.data();
+    if (!roomDoc.exists || room.phase === "closed" || Date.now() - (room.createdAt || 0) > SCHREIBRAUM_ROOM_MAX_AGE_MS) {
+      schreibraumJoinErr("Diesen Raum gibt es nicht (mehr). Prüfe die PIN.");
+      return;
+    }
+    const nameKey = name.toLowerCase();
+    const same = await roomRef.collection("students").where("nameKey", "==", nameKey).get();
+    if (same.docs.some(d => !d.data().left)) {
+      schreibraumJoinErr(`«${name}» ist schon im Raum. Ergänze z.B. das Initial deines Nachnamens. Warst du das selbst? Dann tippe oben auf «Weiterschreiben».`);
+      return;
+    }
+    if (!same.empty) {
+      // gleiche Person kommt nach «Verlassen» zurück: altes Board weiterverwenden statt Doppel-Karte
+      const old = same.docs[0];
+      await old.ref.update({ left: false, active: true, color: schreibraumSelectedColor, lastSeen: firebase.firestore.FieldValue.serverTimestamp() });
+      schreibraumEnterWrite(pin, old.id, { ...old.data(), color: schreibraumSelectedColor });
+      return;
+    }
+    const now = Date.now();
+    const data = { name, nameKey, text: "", mode: "text", color: schreibraumSelectedColor, joinedAt: now, updatedAt: now, active: true, done: false, lastSeen: firebase.firestore.FieldValue.serverTimestamp() };
+    const studentRef = await roomRef.collection("students").add(data);
+    schreibraumEnterWrite(pin, studentRef.id, data);
   } catch (e) {
     console.error("Schreibraum: Beitritt fehlgeschlagen.", e);
-    errEl.textContent = "Beitritt fehlgeschlagen. Prüfe die Internetverbindung.";
-    errEl.classList.remove("hidden");
+    schreibraumJoinErr("Beitritt fehlgeschlagen. Prüfe die Internetverbindung.");
+  } finally {
+    btn.disabled = false;
   }
 });
+async function schreibraumResumeStudent() {
+  const session = storageGet(SCHREIBRAUM_STUDENT_KEY);
+  if (!session) return;
+  const forget = (msg) => {
+    storageSet(SCHREIBRAUM_STUDENT_KEY, null);
+    schreibraumRenderResume();
+    openConfirm(msg, null, "OK");
+  };
+  try {
+    if (!(await ensureFirebase())) { openConfirm("Keine Verbindung zum Schreibraum-Server möglich.", null, "OK"); return; }
+    const roomDoc = await schreibraumRoomRef(session.pin).get();
+    if (!roomDoc.exists || roomDoc.data().phase === "closed") { forget("Dieser Raum ist geschlossen."); return; }
+    const studentRef = schreibraumRoomRef(session.pin).collection("students").doc(session.id);
+    const studentDoc = await studentRef.get();
+    if (!studentDoc.exists) { forget("Dein Board gibt es nicht mehr. Tritt neu bei."); return; }
+    await studentRef.update({ left: false, active: true, lastSeen: firebase.firestore.FieldValue.serverTimestamp() });
+    schreibraumEnterWrite(session.pin, session.id, studentDoc.data());
+  } catch (e) {
+    console.error("Schreibraum: Fortsetzen fehlgeschlagen.", e);
+    openConfirm("Fortsetzen fehlgeschlagen. Prüfe die Internetverbindung.", null, "OK");
+  }
+}
+document.getElementById("schreibraumResumeStudentBtn").addEventListener("click", schreibraumResumeStudent);
+document.getElementById("schreibraumJoinResumeBtn").addEventListener("click", schreibraumResumeStudent);
+
+let schreibraumDone = false;
+let schreibraumRoomClosed = false;
+function schreibraumStudentRef() { return schreibraumRoomRef(schreibraumPin).collection("students").doc(schreibraumStudentId); }
+function schreibraumEnterWrite(pin, id, data) {
+  schreibraumIsHost = false;
+  schreibraumPin = pin;
+  schreibraumStudentId = id;
+  schreibraumStudentName = data.name;
+  schreibraumRoomClosed = false;
+  const color = schreibraumSafeColor(data.color);
+  storageSet(SCHREIBRAUM_STUDENT_KEY, { pin, id, name: data.name, color });
+  schreibraumLastReactionTs = data.reaction && data.reaction.ts ? data.reaction.ts : 0;
+  schreibraumLastClearedAt = data.clearedAt || 0;
+  document.getElementById("schreibraumWriteName").textContent = data.name;
+  document.getElementById("schreibraumWriteCard").style.setProperty("--board-color", color);
+  document.getElementById("schreibraumWriteTextarea").value = data.text || "";
+  document.getElementById("schreibraumWriteQuestion").classList.add("hidden");
+  schreibraumSetDone(!!data.done);
+  schreibraumSetLocked(false);
+  schreibraumResetCanvas();
+  const img = schreibraumSafeImage(data.drawingData);
+  if (img) schreibraumLoadDrawing(img);
+  schreibraumSetMode(data.mode === "draw" ? "draw" : "text", true);
+  schreibraumPendingWrites = 0;
+  schreibraumWriteFailed = false;
+  schreibraumRenderStatus();
+  showView("schreibraumWrite");
+  schreibraumStopListening();
+  schreibraumStartHeartbeat();
+  let lastQuestion = null;
+  schreibraumRoomUnsub = schreibraumRoomRef(pin).onSnapshot(snap => {
+    const room = snap.data();
+    if (!snap.exists || !room || room.phase === "closed") { schreibraumEndStudentSession("Die Lehrperson hat den Raum geschlossen."); return; }
+    schreibraumSetLocked(room.phase === "locked");
+    const qEl = document.getElementById("schreibraumWriteQuestion");
+    if (room.question) { qEl.textContent = "❓ " + room.question; qEl.classList.remove("hidden"); }
+    else { qEl.classList.add("hidden"); }
+    if (lastQuestion !== null && room.question && room.question !== lastQuestion) {
+      qEl.classList.remove("schreibraum-flash");
+      void qEl.offsetWidth;
+      qEl.classList.add("schreibraum-flash");
+    }
+    lastQuestion = room.question || "";
+  }, err => console.error("Schreibraum: Raum-Update fehlgeschlagen.", err));
+  schreibraumSelfUnsub = schreibraumStudentRef().onSnapshot(snap => {
+    const data = snap.data();
+    if (!snap.exists || !data) {
+      // kurz warten: beim Schliessen kommt die Raum-Meldung meist zuerst
+      setTimeout(() => { if (schreibraumStudentId === id && !schreibraumRoomClosed) schreibraumEndStudentSession("Die Lehrperson hat dein Board entfernt. Du kannst neu beitreten."); }, 1500);
+      return;
+    }
+    if (data.reaction && data.reaction.ts && data.reaction.ts !== schreibraumLastReactionTs) {
+      schreibraumLastReactionTs = data.reaction.ts;
+      schreibraumShowReaction(data.reaction.emoji || "👍");
+    }
+    if (data.clearedAt && data.clearedAt !== schreibraumLastClearedAt) {
+      schreibraumLastClearedAt = data.clearedAt;
+      clearTimeout(schreibraumSaveTimeout);
+      clearTimeout(schreibraumDrawSyncTimeout);
+      document.getElementById("schreibraumWriteTextarea").value = "";
+      schreibraumResetCanvas();
+      schreibraumSetDone(false);
+    }
+  }, err => console.error("Schreibraum: Eigenes Board konnte nicht beobachtet werden.", err));
+}
+function schreibraumEndStudentSession(message) {
+  if (!schreibraumStudentId) return;
+  schreibraumRoomClosed = true;
+  schreibraumStopListening();
+  storageSet(SCHREIBRAUM_STUDENT_KEY, null);
+  schreibraumPin = null;
+  schreibraumStudentId = null;
+  showView("schreibraumPick");
+  openConfirm(message, null, "OK");
+}
 let schreibraumReactionHideTimeout = null;
 function schreibraumShowReaction(emoji) {
+  const reaction = SCHREIBRAUM_REACTIONS.find(r => r.emoji === emoji) || SCHREIBRAUM_REACTIONS[0];
   const el = document.getElementById("schreibraumReactionPopup");
-  el.textContent = emoji;
+  document.getElementById("schreibraumReactionEmoji").textContent = reaction.emoji;
+  document.getElementById("schreibraumReactionText").textContent = reaction.text;
+  el.style.background = reaction.emoji === "🤔" ? "var(--warn)" : "var(--success)";
   el.classList.remove("hidden");
   el.style.animation = "none";
   void el.offsetWidth;
   el.style.animation = "";
   clearTimeout(schreibraumReactionHideTimeout);
-  schreibraumReactionHideTimeout = setTimeout(() => el.classList.add("hidden"), 2500);
+  schreibraumReactionHideTimeout = setTimeout(() => el.classList.add("hidden"), 4000);
 }
+
+/* ---- Speicherstatus: SuS sollen sehen, ob ihre Antwort angekommen ist ---- */
+let schreibraumPendingWrites = 0, schreibraumWriteFailed = false;
+function schreibraumTrackWrite(promise) {
+  schreibraumPendingWrites++;
+  schreibraumRenderStatus();
+  return promise
+    .then(() => { schreibraumWriteFailed = false; })
+    .catch(err => { schreibraumWriteFailed = true; console.error("Schreibraum: Speichern fehlgeschlagen.", err); })
+    .finally(() => { schreibraumPendingWrites--; schreibraumRenderStatus(); });
+}
+function schreibraumRenderStatus() {
+  const el = document.getElementById("schreibraumWriteStatus");
+  let text = "✓ Gespeichert", cls = "";
+  if (!navigator.onLine) { text = "⚠️ Offline – wird nachgesendet"; cls = "schreibraum-status-warn"; }
+  else if (schreibraumWriteFailed) { text = "⚠️ Nicht gespeichert"; cls = "schreibraum-status-warn"; }
+  else if (schreibraumPendingWrites > 0) { text = "⏳ Sende …"; cls = "schreibraum-status-busy"; }
+  el.textContent = text;
+  el.className = "schreibraum-status" + (cls ? " " + cls : "");
+}
+window.addEventListener("online", schreibraumRenderStatus);
+window.addEventListener("offline", schreibraumRenderStatus);
+function schreibraumSaveStudent(fields) {
+  if (!schreibraumPin || !schreibraumStudentId) return;
+  const update = { ...fields, updatedAt: Date.now() };
+  if (schreibraumDone && !("done" in fields)) { update.done = false; schreibraumSetDone(false); }
+  schreibraumTrackWrite(schreibraumStudentRef().update(update));
+}
+
 let schreibraumSaveTimeout = null;
 document.getElementById("schreibraumWriteTextarea").addEventListener("input", (e) => {
-  if (!schreibraumPin || !schreibraumStudentId) return;
+  if (!schreibraumPin || !schreibraumStudentId || schreibraumLocked) return;
   clearTimeout(schreibraumSaveTimeout);
   const text = e.target.value;
-  schreibraumSaveTimeout = setTimeout(() => {
-    firebaseDb.collection("writerooms").doc(schreibraumPin).collection("students").doc(schreibraumStudentId).update({ text, mode: "text", updatedAt: Date.now() }).catch(err => console.error("Schreibraum: Antwort konnte nicht gespeichert werden.", err));
-  }, 400);
+  schreibraumSaveTimeout = setTimeout(() => schreibraumSaveStudent({ text }), 600);
 });
 
-/* ---- Zeichnen ---- */
+function schreibraumSetDone(done) {
+  schreibraumDone = done;
+  const btn = document.getElementById("schreibraumDoneBtn");
+  btn.textContent = done ? "✅ Fertig gemeldet – tippen zum Weiterarbeiten" : "✋ Ich bin fertig";
+  btn.className = done ? "btn btn-big" : "btn btn-big btn-outline";
+  btn.style.background = done ? "var(--success)" : "";
+}
+document.getElementById("schreibraumDoneBtn").addEventListener("click", () => {
+  const done = !schreibraumDone;
+  schreibraumSetDone(done);
+  schreibraumSaveStudent({ done });
+});
+
+function schreibraumSetLocked(locked) {
+  schreibraumLocked = locked;
+  const textarea = document.getElementById("schreibraumWriteTextarea");
+  textarea.readOnly = locked;
+  if (locked && document.activeElement === textarea) textarea.blur();
+  document.getElementById("schreibraumLockBanner").classList.toggle("hidden", !locked);
+  document.getElementById("schreibraumDrawWrap").classList.toggle("schreibraum-locked", locked);
+  document.querySelectorAll("#schreibraumDrawTools button, #schreibraumDoneBtn").forEach(b => { b.disabled = locked; });
+  if (!locked) schreibraumUpdateUndoBtn();
+}
+
+/* ---- Zeichnen ----
+   Fixe interne Auflösung (4:3): Drehen des Tablets verzerrt nichts, Wechsel zwischen
+   Tippen und Zeichnen löscht nichts, und die gesendete Zeichnung bleibt klein. */
+const SCHREIBRAUM_CANVAS_W = 1200, SCHREIBRAUM_CANVAS_H = 900;
+const SCHREIBRAUM_EXPORT_W = 800, SCHREIBRAUM_EXPORT_H = 600;
 let schreibraumMode = "text";
-function schreibraumSetMode(mode) {
+function schreibraumSetMode(mode, skipSave) {
   schreibraumMode = mode;
   document.getElementById("schreibraumWriteTextarea").classList.toggle("hidden", mode !== "text");
   document.getElementById("schreibraumDrawWrap").classList.toggle("hidden", mode !== "draw");
   document.getElementById("schreibraumModeTextBtn").classList.toggle("btn-active", mode === "text");
   document.getElementById("schreibraumModeDrawBtn").classList.toggle("btn-active", mode === "draw");
-  if (mode === "draw") schreibraumSetupCanvas();
+  if (!skipSave && schreibraumPin && schreibraumStudentId) {
+    schreibraumStudentRef().update({ mode }).catch(err => console.error("Schreibraum: Modus konnte nicht gespeichert werden.", err));
+  }
 }
 document.getElementById("schreibraumModeTextBtn").addEventListener("click", () => schreibraumSetMode("text"));
 document.getElementById("schreibraumModeDrawBtn").addEventListener("click", () => schreibraumSetMode("draw"));
-let schreibraumCanvasReady = false;
-let schreibraumPenColor = "#0f172a", schreibraumPenSize = 6, schreibraumIsEraser = false;
-function schreibraumSetupCanvas() {
+let schreibraumPenColor = "#0f172a", schreibraumPenSize = 8, schreibraumIsEraser = false;
+let schreibraumCanvasDirty = false;
+const schreibraumUndoStack = [];
+const SCHREIBRAUM_UNDO_MAX = 8;
+function schreibraumCanvasCtx() { return document.getElementById("schreibraumDrawCanvas").getContext("2d"); }
+function schreibraumResetCanvas() {
   const canvas = document.getElementById("schreibraumDrawCanvas");
-  const rect = canvas.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = Math.round(rect.width * dpr);
-  canvas.height = Math.round(rect.height * dpr);
+  canvas.width = SCHREIBRAUM_CANVAS_W;
+  canvas.height = SCHREIBRAUM_CANVAS_H;
   const ctx = canvas.getContext("2d");
-  ctx.scale(dpr, dpr);
   ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, 0, rect.width, rect.height);
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
-  schreibraumCanvasReady = true;
+  schreibraumCanvasDirty = false;
+  schreibraumUndoStack.length = 0;
+  schreibraumUpdateUndoBtn();
 }
+function schreibraumLoadDrawing(src) {
+  const img = new Image();
+  img.onload = () => {
+    schreibraumCanvasCtx().drawImage(img, 0, 0, SCHREIBRAUM_CANVAS_W, SCHREIBRAUM_CANVAS_H);
+    schreibraumCanvasDirty = true;
+  };
+  img.src = src;
+}
+function schreibraumPushUndo() {
+  schreibraumUndoStack.push({ image: schreibraumCanvasCtx().getImageData(0, 0, SCHREIBRAUM_CANVAS_W, SCHREIBRAUM_CANVAS_H), dirty: schreibraumCanvasDirty });
+  if (schreibraumUndoStack.length > SCHREIBRAUM_UNDO_MAX) schreibraumUndoStack.shift();
+  schreibraumUpdateUndoBtn();
+}
+function schreibraumUpdateUndoBtn() { document.getElementById("schreibraumUndoBtn").disabled = schreibraumLocked || !schreibraumUndoStack.length; }
+document.getElementById("schreibraumUndoBtn").addEventListener("click", () => {
+  const last = schreibraumUndoStack.pop();
+  if (!last) return;
+  schreibraumCanvasCtx().putImageData(last.image, 0, 0);
+  schreibraumCanvasDirty = last.dirty;
+  schreibraumUpdateUndoBtn();
+  schreibraumScheduleDrawSync();
+});
 document.querySelectorAll(".schreibraum-color-swatch[data-color]").forEach(btn => {
   if (btn.closest("#schreibraumJoinColorRow")) return;
   btn.addEventListener("click", () => {
@@ -860,12 +1363,15 @@ document.getElementById("schreibraumEraserBtn").addEventListener("click", () => 
   let drawing = false, points = [];
   function pos(e) {
     const rect = canvas.getBoundingClientRect();
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    return { x: (e.clientX - rect.left) * SCHREIBRAUM_CANVAS_W / rect.width, y: (e.clientY - rect.top) * SCHREIBRAUM_CANVAS_H / rect.height };
+  }
+  function applyPen(ctx) {
+    ctx.strokeStyle = schreibraumIsEraser ? "#ffffff" : schreibraumPenColor;
+    ctx.lineWidth = schreibraumIsEraser ? schreibraumPenSize * 4 : schreibraumPenSize;
   }
   function strokeSegment(p0, p1, p2) {
     const ctx = canvas.getContext("2d");
-    ctx.strokeStyle = schreibraumIsEraser ? "#ffffff" : schreibraumPenColor;
-    ctx.lineWidth = schreibraumIsEraser ? schreibraumPenSize * 4 : schreibraumPenSize;
+    applyPen(ctx);
     const mid1 = { x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
     const mid2 = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
     ctx.beginPath();
@@ -874,17 +1380,18 @@ document.getElementById("schreibraumEraserBtn").addEventListener("click", () => 
     ctx.stroke();
   }
   canvas.addEventListener("pointerdown", (e) => {
-    if (!schreibraumCanvasReady) schreibraumSetupCanvas();
+    if (schreibraumLocked) return;
+    schreibraumPushUndo();
     drawing = true;
     const p = pos(e);
     points = [p, p];
     const ctx = canvas.getContext("2d");
-    ctx.strokeStyle = schreibraumIsEraser ? "#ffffff" : schreibraumPenColor;
-    ctx.lineWidth = schreibraumIsEraser ? schreibraumPenSize * 4 : schreibraumPenSize;
+    applyPen(ctx);
     ctx.beginPath();
     ctx.arc(p.x, p.y, ctx.lineWidth / 2, 0, Math.PI * 2);
     ctx.fillStyle = ctx.strokeStyle;
     ctx.fill();
+    if (!schreibraumIsEraser) schreibraumCanvasDirty = true;
     try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
   });
   canvas.addEventListener("pointermove", (e) => {
@@ -899,31 +1406,54 @@ document.getElementById("schreibraumEraserBtn").addEventListener("click", () => 
   function endStroke() {
     if (!drawing) return;
     drawing = false;
-    schreibraumSyncDrawing();
+    schreibraumScheduleDrawSync();
   }
   canvas.addEventListener("pointerup", endStroke);
   canvas.addEventListener("pointercancel", endStroke);
-  canvas.addEventListener("pointerleave", () => { if (drawing) endStroke(); });
 })();
+let schreibraumDrawSyncTimeout = null;
+function schreibraumScheduleDrawSync() {
+  clearTimeout(schreibraumDrawSyncTimeout);
+  schreibraumDrawSyncTimeout = setTimeout(schreibraumSyncDrawing, 350);
+}
+// Verkleinert als JPEG senden: ein Firestore-Dokument darf höchstens 1 MB gross sein
+function schreibraumExportDrawing() {
+  const out = document.createElement("canvas");
+  out.width = SCHREIBRAUM_EXPORT_W;
+  out.height = SCHREIBRAUM_EXPORT_H;
+  out.getContext("2d").drawImage(document.getElementById("schreibraumDrawCanvas"), 0, 0, out.width, out.height);
+  let data = out.toDataURL("image/jpeg", 0.8);
+  if (data.length > 700000) data = out.toDataURL("image/jpeg", 0.5);
+  return data;
+}
 function schreibraumSyncDrawing() {
   if (!schreibraumPin || !schreibraumStudentId) return;
-  const canvas = document.getElementById("schreibraumDrawCanvas");
-  const drawingData = canvas.toDataURL("image/png");
-  firebaseDb.collection("writerooms").doc(schreibraumPin).collection("students").doc(schreibraumStudentId).update({ drawingData, mode: "draw", updatedAt: Date.now() }).catch(err => console.error("Schreibraum: Zeichnung konnte nicht gespeichert werden.", err));
+  const drawingData = schreibraumCanvasDirty ? schreibraumExportDrawing() : firebase.firestore.FieldValue.delete();
+  schreibraumSaveStudent({ drawingData });
 }
 document.getElementById("schreibraumDrawClearBtn").addEventListener("click", () => {
-  schreibraumSetupCanvas();
-  schreibraumSyncDrawing();
+  schreibraumPushUndo();
+  const undo = schreibraumUndoStack.slice();
+  schreibraumResetCanvas();
+  schreibraumUndoStack.push(...undo);
+  schreibraumUpdateUndoBtn();
+  schreibraumScheduleDrawSync();
 });
 document.getElementById("schreibraumWriteLeaveBtn").addEventListener("click", () => {
-  openConfirm("Schreibraum wirklich verlassen?", () => {
+  openConfirm("Schreibraum verlassen? Deine Antwort bleibt bei der Lehrperson sichtbar.", () => {
+    clearTimeout(schreibraumSaveTimeout);
+    schreibraumStudentRef().update({ left: true, active: false }).catch(() => {});
     schreibraumStopListening();
+    storageSet(SCHREIBRAUM_STUDENT_KEY, null);
+    schreibraumPin = null;
+    schreibraumStudentId = null;
     showView("schreibraumPick");
   }, "Verlassen");
 });
 (function schreibraumCheckUrlJoin() {
   const params = new URLSearchParams(location.search);
   const pin = params.get("join");
+  showView("schreibraumPick");
   if (pin) {
     document.getElementById("schreibraumJoinPinInput").value = pin;
     showView("schreibraumJoin");

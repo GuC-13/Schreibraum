@@ -1,4 +1,4 @@
-const CACHE_NAME = "schreibraum-cache-v5";
+const CACHE_NAME = "schreibraum-cache-v6";
 const FILES_TO_CACHE = ["./", "./index.html"];
 
 self.addEventListener("install", (event) => {
@@ -13,16 +13,20 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
+// Netzwerk zuerst: Updates kommen sofort an, der Cache dient nur als Offline-Rückfall.
+// Fremde Hosts (Firebase/Firestore) werden nicht angefasst, sonst landen Live-Verbindungen im Cache.
 self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const fetchPromise = fetch(event.request)
-        .then((response) => {
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, response.clone()));
-          return response;
-        })
-        .catch(() => cached);
-      return cached || fetchPromise;
-    })
+    fetch(req)
+      .then((response) => {
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+        }
+        return response;
+      })
+      .catch(() => caches.match(req, { ignoreSearch: true }))
   );
 });
